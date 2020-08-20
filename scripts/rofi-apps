@@ -1,0 +1,25 @@
+#!/bin/bash
+
+rofi -show drun \
+  -sidebar-mode \
+  -display-drun "exec" -drun-display-format "{name}" \
+  -modi drun,run,window \
+  -matching fuzzy \
+  -lines 10 \
+  -padding 8 \
+  -width 70 \
+  -location 0 \
+  -columns 3 \
+  -hide-scrollbar true \
+  -font "ProFont For Powerline Medium 10" \
+  -color-enabled true \
+  -color-window "#282828,#282828,#282828" \
+  -color-normal "#323232,#bbbbbb,#323232,#458588,#eeeeee" \
+  -color-active "#323232,#00897b,#323232,#458588,#eeeeee" \
+  -color-urgent "#323232,#fdd835,#323232,#458588,#eeeeee"
+
+  # -font "TerminessTTF Nerd Font Medium 10" \
+  # -color-window "#383c4a,#383c4a,#383c4a" \
+  # -color-normal "#3c4150,#b0b0b0,#3c4150,#476b99,#ffffff" \
+  # -color-active "#383c4a,#00897b,#3c4150,#476b99,#ffffff" \
+  # -color-urgent "#383c4a,#fdd835,#3c4150,#476b99,#ffffff"

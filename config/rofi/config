@@ -1,0 +1,2 @@
+rofi.color-enabled: true
+modi: window,run,ssh,drun,windowcd,combi,keys
