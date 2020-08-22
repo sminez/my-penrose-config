@@ -15,7 +15,6 @@ use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
 
 const HEIGHT: usize = 18;
-
 const PROFONT: &'static str = "ProFont For Powerline";
 
 const BLACK: u32 = 0x282828;
@@ -31,7 +30,6 @@ fn main() -> Result<()> {
 
     // -- top level config constants --
     config.workspaces = vec!["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-    config.fonts = &["ProFont For Powerline:size=10", "Iosevka Nerd Font:size=10"];
     config.floating_classes = &["rofi", "dmenu", "dunst", "polybar", "pinentry-gtk-2"];
 
     // -- hooks --

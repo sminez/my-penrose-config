@@ -1,7 +1,8 @@
 #! /usr/bin/env zsh
 # A super simple status bar for dwm
 
-BATTERY_INSTANCE="BAT1"
+BATTERY_1="BAT1"
+BATTERY_2="BAT0"
 NET_INTERFACE="$(ip route | awk '/^default/ { print $5 ; exit }')"
 
 function get_ip {
@@ -10,9 +11,9 @@ function get_ip {
 }
 
 function get_battery {
-  local state perc icon
+  local state perc icon battery=$1
 
-  upower -i "/org/freedesktop/UPower/devices/battery_$BATTERY_INSTANCE" |
+  upower -i "/org/freedesktop/UPower/devices/battery_$battery" |
     awk '/state|percentage/ { print $2 }' |
     xargs |
     tr -d '%' |
@@ -48,6 +49,6 @@ function get_layout {
 
 # == main loop ==
 while true; do
-  xsetroot -name "<$(iwgetid -r)> $(get_battery) $(get_volume) $(get_layout) $(date '+%c')"
+  xsetroot -name "<$(iwgetid -r)> $(get_battery $BATTERY_1) $(get_battery $BATTERY_2) $(get_volume) $(get_layout) $(date '+%c')"
   sleep 2
 done
