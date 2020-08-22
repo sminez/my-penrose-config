@@ -5,15 +5,23 @@
 extern crate penrose;
 
 use penrose::{
-    contrib::{extensions::Scratchpad, hooks::LayoutSymbolAsRootName, layouts::paper},
+    contrib::{extensions::Scratchpad, layouts::paper},
+    draw::{dwm_bar, TextStyle, XCBDraw},
     helpers::{spawn, spawn_for_output},
     layout::{bottom_stack, side_stack, Layout, LayoutConf},
     Backward, Config, Forward, Less, More, Result, WindowManager, XcbConnection,
 };
-
 use simplelog::{LevelFilter, SimpleLogger};
-
 use std::env;
+
+const HEIGHT: usize = 18;
+
+const PROFONT: &'static str = "ProFont For Powerline";
+
+const BLACK: u32 = 0x282828;
+const GREY: u32 = 0x3c3836;
+const WHITE: u32 = 0xebdbb2;
+const BLUE: u32 = 0x458588;
 
 fn main() -> Result<()> {
     // -- logging --
@@ -27,9 +35,28 @@ fn main() -> Result<()> {
     config.floating_classes = &["rofi", "dmenu", "dunst", "polybar", "pinentry-gtk-2"];
 
     // -- hooks --
-    config.hooks.push(LayoutSymbolAsRootName::new());
     let sp = Scratchpad::new("st", 0.8, 0.8);
     sp.register(&mut config);
+
+    let style = TextStyle {
+        font: PROFONT.to_string(),
+        point_size: 11,
+        fg: WHITE.into(),
+        bg: Some(BLACK.into()),
+        padding: (2.0, 2.0),
+    };
+    let highlight = BLUE;
+    let empty_ws = GREY;
+    let bar = dwm_bar(
+        Box::new(XCBDraw::new()?),
+        0,
+        HEIGHT,
+        &style,
+        highlight,
+        empty_ws,
+        &config.workspaces,
+    )?;
+    config.hooks.push(Box::new(bar));
 
     // -- layouts --
     let follow_focus_conf = LayoutConf {

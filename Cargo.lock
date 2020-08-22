@@ -8,9 +8,9 @@ checksum = "6b602bfe940d21c130f3895acd65221e8a61270debe89d628b9cb4e3ccb8569b"
 
 [[package]]
 name = "autocfg"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8aac770f1885fd7e387acedd76065302551364496e46b3dd00860b2f8359b9d"
+checksum = "cdb031dd78e28731d87d56cc8ffef4a8f36ca26c38fe2de700543e627f8a464a"
 
 [[package]]
 name = "bitflags"
@@ -332,7 +332,7 @@ dependencies = [
 [[package]]
 name = "penrose"
 version = "0.1.8"
-source = "git+https://github.com/sminez/penrose?branch=develop#94dbea4602896d2eabcd3071271c7f80afa577ac"
+source = "git+https://github.com/sminez/penrose?branch=develop#423ffc393599efc71aadc8f2aff264b7eccb861b"
 dependencies = [
  "anyhow",
  "cairo-rs",
@@ -482,9 +482,9 @@ dependencies = [
 
 [[package]]
 name = "syn"
-version = "1.0.38"
+version = "1.0.39"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e69abc24912995b3038597a7a593be5053eb0fb44f3cc5beec0deb421790c1f4"
+checksum = "891d8d6567fe7c7f8835a3a98af4208f3846fba258c1bc3c31d6e506239f11f9"
 dependencies = [
  "proc-macro2",
  "quote",

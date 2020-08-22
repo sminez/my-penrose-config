@@ -11,9 +11,13 @@ pgrep -fi penrose-startup.sh | grep -v "^$pid$" | xargs kill
 # Set screen resolutions (add additional screens here)
 xrandr --output HDMI-1 --auto --right-of eDP-1 &
 
+# fix a couple of quirks with my thinkpad: enable tap-click for the touchpad
+# and slow down the track point accelleration
+xinput --set-prop "11" "libinput Tapping Enabled" 1
+xinput --set-prop "12" "libinput Accel Speed" 0.0
+
 running() { pgrep -fi "$1" >/dev/null; }
 
-running kdeconnnectd || /usr/lib/kdeconnectd &
 running nm-applet || nm-applet &
 running udiskie || udiskie -a -n -t &
 running xautolock || xautolock \
@@ -29,7 +33,7 @@ running xfce4-power-manager || xfce4-power-manager &
 running gnome-keyring-daemon || gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
 
 "$HOME/.fehbg"
-"$HOME/.config/polybar/launch.sh" &
+"$HOME/bin/scripts/penrose-stat.zsh" &
 
 # see run-penrose.sh
 [[ -z "$RESTARTED" ]] && "$HOME/bin/unlock-ssh.sh" &
