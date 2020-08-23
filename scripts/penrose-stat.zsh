@@ -64,7 +64,7 @@ current_status=""
 
 while true; do
   new_status="$(get_status)"
-  [ "$current_status" = "$new_status" ] || echo "$new_status"
+  [ "$current_status" = "$new_status" ] || xsetroot -name "$new_status"
   current_status="$new_status"
   sleep $POLL
 done

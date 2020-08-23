@@ -332,7 +332,7 @@ dependencies = [
 [[package]]
 name = "penrose"
 version = "0.1.9"
-source = "git+https://github.com/sminez/penrose?branch=develop#dda120907dcd986deef546e3531addfc7005c63b"
+source = "git+https://github.com/sminez/penrose?branch=develop#cce0249910fad4401a4536b9dbe9144f07fcf12d"
 dependencies = [
  "anyhow",
  "cairo-rs",

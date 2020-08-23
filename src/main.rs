@@ -5,10 +5,10 @@
 extern crate penrose;
 
 use penrose::{
-    contrib::{extensions::Scratchpad, layouts::paper},
+    contrib::extensions::Scratchpad,
     draw::{dwm_bar, TextStyle, XCBDraw},
     helpers::{spawn, spawn_for_output},
-    layout::{bottom_stack, side_stack, Layout, LayoutConf},
+    layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
     Backward, Config, Forward, Less, More, Result, WindowManager, XcbConnection,
 };
 use simplelog::{LevelFilter, SimpleLogger};
@@ -36,39 +36,35 @@ fn main() -> Result<()> {
     let sp = Scratchpad::new("st", 0.8, 0.8);
     sp.register(&mut config);
 
-    let style = TextStyle {
-        font: PROFONT.to_string(),
-        point_size: 11,
-        fg: WHITE.into(),
-        bg: Some(BLACK.into()),
-        padding: (2.0, 2.0),
-    };
-    let highlight = BLUE;
-    let empty_ws = GREY;
-    let bar = dwm_bar(
+    config.hooks.push(Box::new(dwm_bar(
         Box::new(XCBDraw::new()?),
         0,
         HEIGHT,
-        &style,
-        highlight,
-        empty_ws,
+        &TextStyle {
+            font: PROFONT.to_string(),
+            point_size: 11,
+            fg: WHITE.into(),
+            bg: Some(BLACK.into()),
+            padding: (2.0, 2.0),
+        },
+        BLUE, // highlight
+        GREY, // empty_ws
         &config.workspaces,
-    )?;
-    config.hooks.push(Box::new(bar));
+    )?));
 
     // -- layouts --
     let follow_focus_conf = LayoutConf {
         floating: false,
         gapless: true,
         follow_focus: true,
-        allow_wrapping: false,
+        allow_wrapping: true,
     };
     let n_main = 1;
     let ratio = 0.6;
     config.layouts = vec![
         Layout::new("[side]", LayoutConf::default(), side_stack, n_main, ratio),
         Layout::new("[botm]", LayoutConf::default(), bottom_stack, n_main, ratio),
-        Layout::new("[papr]", follow_focus_conf, paper, n_main, ratio),
+        Layout::new("[mono]", follow_focus_conf, monocle, n_main, ratio),
     ];
 
     // -- bindings --
