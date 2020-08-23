@@ -61,6 +61,7 @@ fn main() -> Result<()> {
         floating: false,
         gapless: true,
         follow_focus: true,
+        allow_wrapping: false,
     };
     let n_main = 1;
     let ratio = 0.6;
