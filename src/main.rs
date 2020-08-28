@@ -38,7 +38,6 @@ fn main() -> Result<()> {
 
     config.hooks.push(Box::new(dwm_bar(
         Box::new(XCBDraw::new()?),
-        0,
         HEIGHT,
         &TextStyle {
             font: PROFONT.to_string(),
@@ -90,6 +89,7 @@ fn main() -> Result<()> {
         "M-A-k" => run_external!("toggle-kb-for-tada"),
         "M-A-l" => run_external!("lock-screen"),
         "M-A-m" => run_external!("xrandr --output HDMI-1 --auto --right-of eDP-1 "),
+        "M-A-d" => run_internal!(detect_screens),
         "M-slash" => sp.toggle(),
 
         // client management
