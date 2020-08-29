@@ -6,6 +6,7 @@ extern crate penrose;
 
 use penrose::{
     contrib::extensions::Scratchpad,
+    data_types::Selector,
     draw::{dwm_bar, TextStyle, XCBDraw},
     helpers::{spawn, spawn_for_output},
     layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
@@ -97,6 +98,8 @@ fn main() -> Result<()> {
         "M-k" => run_internal!(cycle_client, Backward),
         "M-S-j" => run_internal!(drag_client, Forward),
         "M-S-k" => run_internal!(drag_client, Backward),
+        "M-C-bracketleft" => run_internal!(client_to_screen, &Selector::Index(0)),
+        "M-C-bracketright" => run_internal!(client_to_screen, &Selector::Index(1)),
         "M-S-q" => run_internal!(kill_client),
 
         // workspace management
