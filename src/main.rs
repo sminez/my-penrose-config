@@ -5,12 +5,12 @@
 extern crate penrose;
 
 use penrose::{
+    bindings::MouseEvent,
     contrib::extensions::Scratchpad,
-    data_types::Selector,
     draw::{dwm_bar, TextStyle, XCBDraw},
     helpers::{spawn, spawn_for_output},
     layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
-    Backward, Config, Forward, Less, More, Result, WindowManager, XcbConnection,
+    Backward, Config, Forward, Less, More, Result, Selector, WindowManager, XcbConnection,
 };
 use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
@@ -18,10 +18,10 @@ use std::env;
 const HEIGHT: usize = 18;
 const PROFONT: &'static str = "ProFont For Powerline";
 
-const BLACK: u32 = 0x282828;
-const GREY: u32 = 0x3c3836;
-const WHITE: u32 = 0xebdbb2;
-const BLUE: u32 = 0x458588;
+const BLACK: u32 = 0x282828ff;
+const GREY: u32 = 0x3c3836ff;
+const WHITE: u32 = 0xebdbb2ff;
+const BLUE: u32 = 0x458588ff;
 
 fn main() -> Result<()> {
     // -- logging --
@@ -100,10 +100,13 @@ fn main() -> Result<()> {
         "M-S-k" => run_internal!(drag_client, Backward),
         "M-C-bracketleft" => run_internal!(client_to_screen, &Selector::Index(0)),
         "M-C-bracketright" => run_internal!(client_to_screen, &Selector::Index(1)),
+        "M-S-f" => run_internal!(toggle_client_fullscreen, &Selector::Focused),
         "M-S-q" => run_internal!(kill_client),
 
         // workspace management
         "M-Tab" => run_internal!(toggle_workspace),
+        "M-A-period" => run_internal!(cycle_workspace, Forward),
+        "M-A-comma" => run_internal!(cycle_workspace, Backward),
         "M-bracketright" => run_internal!(cycle_screen, Forward),
         "M-bracketleft" => run_internal!(cycle_screen, Backward),
         "M-S-bracketright" => run_internal!(drag_workspace, Forward),
@@ -125,12 +128,17 @@ fn main() -> Result<()> {
         }
     };
 
+    let mouse_bindings = gen_mousebindings! {
+        Press Right + [Meta] => |wm: &mut WindowManager, _: &MouseEvent| wm.cycle_workspace(Forward),
+        Press Left + [Meta] => |wm: &mut WindowManager, _: &MouseEvent| wm.cycle_workspace(Backward)
+    };
+
     // -- init & run --
     let conn = XcbConnection::new()?;
     let mut wm = WindowManager::init(config, &conn);
 
     spawn(format!("{}/bin/scripts/penrose-startup.sh", home));
-    wm.grab_keys_and_run(key_bindings);
+    wm.grab_keys_and_run(key_bindings, mouse_bindings);
 
     Ok(())
 }
