@@ -325,14 +325,14 @@ dependencies = [
 name = "penrose"
 version = "0.1.0"
 dependencies = [
- "penrose 0.1.10",
+ "penrose 0.1.11",
  "simplelog",
 ]
 
 [[package]]
 name = "penrose"
-version = "0.1.10"
-source = "git+https://github.com/sminez/penrose?branch=develop#8e32099772b574ff1921b33d4e945eba22468695"
+version = "0.1.11"
+source = "git+https://github.com/sminez/penrose?branch=develop#cf648d482698c0a14c3f84f39882938b1b1b5306"
 dependencies = [
  "anyhow",
  "cairo-rs",
