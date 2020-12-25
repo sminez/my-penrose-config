@@ -7,12 +7,16 @@
 extern crate penrose;
 
 use penrose::{
-    bindings::MouseEvent,
     contrib::extensions::Scratchpad,
-    draw::{dwm_bar, TextStyle, XCBDraw},
-    helpers::{index_selectors, spawn, spawn_for_output},
-    layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
-    Backward, Config, Forward, Less, More, Result, Selector, WindowManager, XcbConnection,
+    core::{
+        bindings::MouseEvent,
+        helpers::{index_selectors, spawn, spawn_for_output},
+        layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
+        manager::WindowManager,
+    },
+    draw::{dwm_bar, TextStyle},
+    xcb::{new_xcb_connection, XcbDraw},
+    Backward, Config, Forward, Less, More, Result, Selector,
 };
 use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
@@ -40,7 +44,7 @@ fn main() -> Result<()> {
     sp.register(&mut config);
 
     config.hooks.push(Box::new(dwm_bar(
-        Box::new(XCBDraw::new()?),
+        Box::new(XcbDraw::new()?),
         HEIGHT,
         &TextStyle {
             font: PROFONT.to_string(),
@@ -133,7 +137,7 @@ fn main() -> Result<()> {
     };
 
     // -- init & run --
-    let conn = XcbConnection::new()?;
+    let conn = new_xcb_connection()?;
     let mut wm = WindowManager::init(config, &conn);
 
     spawn(format!("{}/bin/scripts/penrose-startup.sh", home));
