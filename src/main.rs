@@ -10,16 +10,21 @@ use penrose::{
     contrib::extensions::Scratchpad,
     core::{
         bindings::MouseEvent,
+        config::Config,
         helpers::{index_selectors, spawn, spawn_for_output},
+        hooks::Hooks,
         layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
         manager::WindowManager,
+        ring::Selector,
     },
     draw::{dwm_bar, TextStyle},
-    xcb::{new_xcb_connection, XcbDraw},
-    Backward, Config, Forward, Less, More, Result, Selector,
+    xcb::{new_xcb_backed_window_manager, XcbDraw},
+    Backward, Forward, Less, More, Result,
 };
 use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
+
+const DEBUG_ENV_VAR: &str = "PENROSE_DEBUG";
 
 const HEIGHT: usize = 18;
 const PROFONT: &str = "ProFont For Powerline";
@@ -29,48 +34,51 @@ const GREY: u32 = 0x3c3836ff;
 const WHITE: u32 = 0xebdbb2ff;
 const BLUE: u32 = 0x458588ff;
 
+const FOLLOW_FOCUS_CONF: LayoutConf = LayoutConf {
+    floating: false,
+    gapless: true,
+    follow_focus: true,
+    allow_wrapping: true,
+};
+const N_MAIN: u32 = 1;
+const RATIO: f32 = 0.6;
+
 fn main() -> Result<()> {
-    // -- logging --
-    SimpleLogger::init(LevelFilter::Info, simplelog::Config::default())?;
+    let log_level = match env::var(DEBUG_ENV_VAR) {
+        Ok(val) if &val == "true" => LevelFilter::Debug,
+        _ => LevelFilter::Info,
+    };
+    SimpleLogger::init(log_level, simplelog::Config::default())?;
 
+    // -- top level config --
     let mut config = Config::default();
-
-    // -- top level config constants --
-    config.workspaces = vec!["1", "2", "3", "4", "5", "6", "7", "8", "9"];
-    config.floating_classes = &["rofi", "dmenu", "dunst", "polybar", "pinentry-gtk-2"];
+    config
+        .workspaces(vec!["1", "2", "3", "4", "5", "6", "7", "8", "9"])
+        .floating_classes(vec!["rofi", "dmenu", "dunst", "polybar", "pinentry-gtk-2"])
+        .layouts(vec![
+            Layout::new("[side]", LayoutConf::default(), side_stack, N_MAIN, RATIO),
+            Layout::new("[botm]", LayoutConf::default(), bottom_stack, N_MAIN, RATIO),
+            Layout::new("[mono]", FOLLOW_FOCUS_CONF, monocle, N_MAIN, RATIO),
+        ]);
 
     // -- hooks --
     let sp = Scratchpad::new("st", 0.8, 0.8);
-    sp.register(&mut config);
-
-    config.hooks.push(Box::new(dwm_bar(
-        Box::new(XcbDraw::new()?),
-        HEIGHT,
-        &TextStyle {
-            font: PROFONT.to_string(),
-            point_size: 11,
-            fg: WHITE.into(),
-            bg: Some(BLACK.into()),
-            padding: (2.0, 2.0),
-        },
-        BLUE, // highlight
-        GREY, // empty_ws
-        &config.workspaces,
-    )?));
-
-    // -- layouts --
-    let follow_focus_conf = LayoutConf {
-        floating: false,
-        gapless: true,
-        follow_focus: true,
-        allow_wrapping: true,
-    };
-    let n_main = 1;
-    let ratio = 0.6;
-    config.layouts = vec![
-        Layout::new("[side]", LayoutConf::default(), side_stack, n_main, ratio),
-        Layout::new("[botm]", LayoutConf::default(), bottom_stack, n_main, ratio),
-        Layout::new("[mono]", follow_focus_conf, monocle, n_main, ratio),
+    let hooks: Hooks = vec![
+        sp.get_hook(),
+        Box::new(dwm_bar(
+            Box::new(XcbDraw::new()?),
+            HEIGHT,
+            &TextStyle {
+                font: PROFONT.to_string(),
+                point_size: 11,
+                fg: WHITE.into(),
+                bg: Some(BLACK.into()),
+                padding: (2.0, 2.0),
+            },
+            BLUE, // highlight
+            GREY, // empty_ws
+            config.workspaces.clone(),
+        )?),
     ];
 
     // -- bindings --
@@ -137,8 +145,7 @@ fn main() -> Result<()> {
     };
 
     // -- init & run --
-    let conn = new_xcb_connection()?;
-    let mut wm = WindowManager::init(config, &conn);
+    let mut wm = new_xcb_backed_window_manager(config, hooks)?;
 
     spawn(format!("{}/bin/scripts/penrose-startup.sh", home));
     wm.grab_keys_and_run(key_bindings, mouse_bindings);
