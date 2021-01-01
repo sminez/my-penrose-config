@@ -48,16 +48,16 @@ pub fn update_monitors_via_xrandr(
     position: XrandrMonitorPosition,
 ) -> Result<()> {
     let raw = spawn_for_output("xrandr")?;
-    let secondary_line =
-        raw.lines()
-            .find(|line| line.starts_with(secondary))
-            .ok_or(PenroseError::Raw(
-                "unable to find secondary monitor in xrandr output".into(),
-            ))?;
+    let secondary_line = raw
+        .lines()
+        .find(|line| line.starts_with(secondary))
+        .ok_or_else(|| {
+            PenroseError::Raw("unable to find secondary monitor in xrandr output".into())
+        })?;
     let status = secondary_line
         .split(' ')
         .nth(1)
-        .ok_or(PenroseError::Raw("unexpected xrandr output".into()))?;
+        .ok_or_else(|| PenroseError::Raw("unexpected xrandr output".into()))?;
 
     // force the primary monitor
     spawn(format!("xrandr --output {} --primary --auto", primary));
