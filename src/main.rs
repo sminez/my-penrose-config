@@ -24,7 +24,9 @@ use penrose::{
     xcb::{new_xcb_backed_window_manager, Api, XcbConnection, XcbDraw},
     Backward, Forward, Less, More, Result,
 };
-use penrose_sminez::actions::{update_monitors_via_xrandr, XrandrMonitorPosition::Right};
+use penrose_sminez::actions::{
+    update_monitors_via_xrandr, AutoSetMonitorsViaXrandr, XrandrMonitorPosition::Right,
+};
 use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
 
@@ -80,6 +82,7 @@ fn main() -> Result<()> {
     let sp = Scratchpad::new("st", 0.8, 0.8);
     let hooks: Hooks<Conn> = vec![
         sp.get_hook(),
+        AutoSetMonitorsViaXrandr::new("eDP-1", "HDMI-2", Right),
         Box::new(dwm_bar(
             XcbDraw::new()?,
             HEIGHT,
@@ -108,7 +111,6 @@ fn main() -> Result<()> {
     });
 
     let redetect_monitors = Box::new(move |_: &mut Wm| {
-        spawn("updating screens");
         if let Err(e) = update_monitors_via_xrandr("eDP-1", "HDMI-2", Right) {
             error!("unable to set monitors via xrandr: {}", e);
         }

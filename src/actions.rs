@@ -1,6 +1,5 @@
 use penrose::{
     core::{
-        data_types::Region,
         helpers::{spawn, spawn_for_output},
         hooks::Hook,
         manager::WindowManager,
@@ -99,7 +98,7 @@ impl<X> Hook<X> for AutoSetMonitorsViaXrandr
 where
     X: XConn,
 {
-    fn screens_updated(&mut self, _: &mut WindowManager<X>, _: &[Region]) {
+    fn randr_notify(&mut self, _: &mut WindowManager<X>) {
         if let Err(e) = update_monitors_via_xrandr(&self.primary, &self.secondary, self.position) {
             error!("{}", e);
         }
