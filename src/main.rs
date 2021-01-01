@@ -6,6 +6,9 @@
 #[macro_use]
 extern crate penrose;
 
+#[macro_use]
+extern crate log;
+
 use penrose::{
     contrib::extensions::Scratchpad,
     core::{
@@ -18,39 +21,52 @@ use penrose::{
         ring::Selector,
     },
     draw::{dwm_bar, TextStyle},
-    xcb::{new_xcb_backed_window_manager, XcbDraw},
+    xcb::{new_xcb_backed_window_manager, Api, XcbConnection, XcbDraw},
     Backward, Forward, Less, More, Result,
 };
+use penrose_sminez::actions::{update_monitors_via_xrandr, XrandrMonitorPosition::Right};
 use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
 
 const DEBUG_ENV_VAR: &str = "PENROSE_DEBUG";
 
-const HEIGHT: usize = 18;
 const PROFONT: &str = "ProFont For Powerline";
+const HEIGHT: usize = 18;
 
 const BLACK: u32 = 0x282828ff;
-const GREY: u32 = 0x3c3836ff;
 const WHITE: u32 = 0xebdbb2ff;
+const GREY: u32 = 0x3c3836ff;
 const BLUE: u32 = 0x458588ff;
 
+const RATIO: f32 = 0.6;
+const N_MAIN: u32 = 1;
 const FOLLOW_FOCUS_CONF: LayoutConf = LayoutConf {
     floating: false,
     gapless: true,
     follow_focus: true,
     allow_wrapping: true,
 };
-const N_MAIN: u32 = 1;
-const RATIO: f32 = 0.6;
 
-fn main() -> Result<()> {
+// NOTE: Declaring these as type aliases here so that changing XConn impls at a later date
+//       is simply a case of updating these definitions (for the most part)
+type Conn = XcbConnection<Api>;
+type Wm = WindowManager<Conn>;
+
+// Helper function
+
+fn set_log_level() {
     let log_level = match env::var(DEBUG_ENV_VAR) {
         Ok(val) if &val == "true" => LevelFilter::Debug,
         _ => LevelFilter::Info,
     };
-    SimpleLogger::init(log_level, simplelog::Config::default())?;
+    if let Err(e) = SimpleLogger::init(log_level, simplelog::Config::default()) {
+        panic!("unable to set log level: {}", e);
+    };
+}
 
-    // -- top level config --
+fn main() -> Result<()> {
+    set_log_level();
+
     let mut config = Config::default();
     config
         .workspaces(vec!["1", "2", "3", "4", "5", "6", "7", "8", "9"])
@@ -61,12 +77,11 @@ fn main() -> Result<()> {
             Layout::new("[mono]", FOLLOW_FOCUS_CONF, monocle, N_MAIN, RATIO),
         ]);
 
-    // -- hooks --
     let sp = Scratchpad::new("st", 0.8, 0.8);
-    let hooks: Hooks = vec![
+    let hooks: Hooks<Conn> = vec![
         sp.get_hook(),
         Box::new(dwm_bar(
-            Box::new(XcbDraw::new()?),
+            XcbDraw::new()?,
             HEIGHT,
             &TextStyle {
                 font: PROFONT.to_string(),
@@ -81,14 +96,21 @@ fn main() -> Result<()> {
         )?),
     ];
 
-    // -- bindings --
     let home = env::var("HOME").unwrap();
     let script = format!("{}/bin/scripts/power-menu.sh", home);
-    let power_menu = Box::new(move |wm: &mut WindowManager| {
+
+    let power_menu = Box::new(move |wm: &mut Wm| {
         if let Ok(o) = spawn_for_output(&script) {
             if o.as_str() == "restart-wm\n" {
                 wm.exit();
             }
+        }
+    });
+
+    let redetect_monitors = Box::new(move |_: &mut Wm| {
+        spawn("updating screens");
+        if let Err(e) = update_monitors_via_xrandr("eDP-1", "HDMI-2", Right) {
+            error!("unable to set monitors via xrandr: {}", e);
         }
     });
 
@@ -101,8 +123,7 @@ fn main() -> Result<()> {
         "M-A-s" => run_external!("screenshot");
         "M-A-k" => run_external!("toggle-kb-for-tada");
         "M-A-l" => run_external!("lock-screen");
-        "M-A-m" => run_external!("xrandr --output HDMI-1 --auto --right-of eDP-1 ");
-        "M-A-d" => run_internal!(detect_screens);
+        "M-A-m" => redetect_monitors;
         "M-slash" => sp.toggle();
 
         // client management
@@ -140,11 +161,10 @@ fn main() -> Result<()> {
     };
 
     let mouse_bindings = gen_mousebindings! {
-        Press Right + [Meta] => |wm: &mut WindowManager, _: &MouseEvent| wm.cycle_workspace(Forward),
-        Press Left + [Meta] => |wm: &mut WindowManager, _: &MouseEvent| wm.cycle_workspace(Backward)
+        Press Right + [Meta] => |wm: &mut Wm, _: &MouseEvent| wm.cycle_workspace(Forward),
+        Press Left + [Meta] => |wm: &mut Wm, _: &MouseEvent| wm.cycle_workspace(Backward)
     };
 
-    // -- init & run --
     let mut wm = new_xcb_backed_window_manager(config, hooks)?;
 
     spawn(format!("{}/bin/scripts/penrose-startup.sh", home));

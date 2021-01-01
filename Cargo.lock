@@ -2,9 +2,9 @@
 # It is not intended for manual editing.
 [[package]]
 name = "anyhow"
-version = "1.0.36"
+version = "1.0.37"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68803225a7b13e47191bab76f2687382b60d259e8cf37f6e1893658b84bb9479"
+checksum = "ee67c11feeac938fae061b232e38e0b6d94f97a9df10e6271319325ac4c56a86"
 
 [[package]]
 name = "autocfg"
@@ -325,18 +325,9 @@ dependencies = [
 
 [[package]]
 name = "penrose"
-version = "0.1.0"
-dependencies = [
- "penrose 0.2.0",
- "simplelog",
-]
-
-[[package]]
-name = "penrose"
 version = "0.2.0"
-source = "git+https://github.com/sminez/penrose?branch=develop#b4ad2e67d0a6c4e4eb790d283e5c609bf917870e"
+source = "git+https://github.com/sminez/penrose?branch=develop#d6dd69ec9cd88c17f30c323d0d4b323520e5e48e"
 dependencies = [
- "anyhow",
  "cairo-rs",
  "cairo-sys-rs",
  "log",
@@ -345,7 +336,17 @@ dependencies = [
  "pangocairo",
  "strum 0.19.5",
  "strum_macros 0.19.4",
+ "thiserror",
  "xcb",
+]
+
+[[package]]
+name = "penrose-sminez"
+version = "0.1.0"
+dependencies = [
+ "log",
+ "penrose",
+ "simplelog",
 ]
 
 [[package]]
