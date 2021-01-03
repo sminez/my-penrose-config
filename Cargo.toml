@@ -7,9 +7,15 @@ edition = "2018"
 [[bin]]
 doc = false
 name = "penrose"
-path = "src/main.rs"
+path = "src/wm/main.rs"
+
+[[bin]]
+doc = false
+name = "pmenu"
+path = "src/pmenu/main.rs"
 
 [dependencies]
+fuzzy-matcher = "0.3.7"
 log = "0.4.8"
-penrose = { git = "https://github.com/sminez/penrose", branch = "develop" }
+penrose = { path = "/home/innes/repos/personal/penrose", features = [ "xcb", "xcb_draw", "xcb_keysyms" ] }
 simplelog = "0.8.0"
