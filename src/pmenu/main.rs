@@ -7,8 +7,9 @@ use penrose::{
         xconnection::Atom,
     },
     draw::{
-        Color, DrawContext, DrawError, KeyPressDraw, KeyPressResult, Result, Text, TextStyle,
-        Widget,
+        widget::{InputBox, LinesWithSelection, Text},
+        Color, DrawContext, DrawError, KeyPressDraw, KeyPressResult, KeyboardControlled, Result,
+        TextStyle, Widget,
     },
     xcb::XcbDraw,
 };
@@ -26,118 +27,6 @@ pub enum PMenuMatch {
     NoMatch,
 }
 
-struct TextWithSelection {
-    lines: Vec<String>,
-    selected: usize,
-    max_lines: usize,
-    font: String,
-    point_size: i32,
-    padding: f64,
-    bg: Color,
-    fg: Color,
-    fg_sel: Color,
-    bg_sel: Color,
-    require_draw: bool,
-    extent: Option<(f64, f64)>,
-}
-
-impl TextWithSelection {
-    fn new(
-        font: String,
-        point_size: i32,
-        padding: f64,
-        bg: Color,
-        fg: Color,
-        bg_sel: Color,
-        fg_sel: Color,
-    ) -> Self {
-        Self {
-            lines: vec![],
-            selected: 0,
-            max_lines: 10,
-            font,
-            point_size,
-            padding,
-            bg,
-            fg,
-            bg_sel,
-            fg_sel,
-            require_draw: false,
-            extent: None,
-        }
-    }
-
-    fn set_input(&mut self, lines: Vec<String>, selected: usize) {
-        self.lines = lines;
-        self.selected = selected;
-        self.require_draw = true;
-    }
-
-    fn set_max_lines(&mut self, max_lines: usize) {
-        self.max_lines = max_lines;
-    }
-}
-
-impl Widget for TextWithSelection {
-    fn draw(
-        &mut self,
-        ctx: &mut dyn DrawContext,
-        _screen: usize,
-        _screen_has_focus: bool,
-        w: f64,
-        h: f64,
-    ) -> Result<()> {
-        ctx.color(&self.bg);
-        ctx.rectangle(0.0, 0.0, w, h);
-        ctx.font(&self.font, self.point_size)?;
-
-        for (ix, line) in self.lines.iter().enumerate() {
-            let (lw, lh) = ctx.text_extent(line)?;
-            let fg = if ix == self.selected {
-                ctx.color(&self.bg_sel);
-                ctx.rectangle(0.0, 0.0, lw + self.padding * 2.0, lh);
-                self.fg_sel
-            } else {
-                self.fg
-            };
-
-            ctx.color(&fg);
-            ctx.text(line, 0.0, (self.padding, self.padding))?;
-            ctx.translate(0.0, lh);
-        }
-
-        Ok(())
-    }
-
-    fn current_extent(&mut self, ctx: &mut dyn DrawContext, _h: f64) -> Result<(f64, f64)> {
-        match self.extent {
-            Some(extent) => Ok(extent),
-            None => {
-                let mut height = 0.0;
-                let mut w_max = 0.0;
-                for line in self.lines.iter() {
-                    ctx.font(&self.font, self.point_size)?;
-                    let (w, h) = ctx.text_extent(line)?;
-                    height += h;
-                    w_max = if w > w_max { w } else { w_max };
-                }
-
-                let ext = (w_max + self.padding, height);
-                self.extent = Some(ext);
-                Ok(ext)
-            }
-        }
-    }
-
-    fn require_draw(&self) -> bool {
-        self.require_draw
-    }
-
-    fn is_greedy(&self) -> bool {
-        false
-    }
-}
-
 pub struct PMenu<D>
 where
     D: KeyPressDraw,
@@ -146,8 +35,8 @@ where
     id: Option<WinId>,
     bg: Color,
     prompt: Text,
-    patt: Text,
-    txt: TextWithSelection,
+    patt: InputBox,
+    txt: LinesWithSelection,
     w: f64,
     h: f64,
 }
@@ -182,8 +71,8 @@ where
         Ok(Self {
             drw,
             bg,
-            txt: TextWithSelection::new(font, point_size, 3.0, bg, fg, hl, fg),
-            patt: Text::new("", &default_style, false, true),
+            txt: LinesWithSelection::new(font, point_size, 3.0, bg, fg, hl, fg, false),
+            patt: InputBox::new(&default_style, false, true),
             prompt: Text::new("", &default_style, false, true),
             w: 0.0,
             h: 0.0,
@@ -206,40 +95,37 @@ where
             .ok_or_else(|| DrawError::Raw("screen_index out of range".into()))?
             .clone();
 
-        let r = screen_region
+        let (_, _, sw, sh) = screen_region.values();
+        let mut ctx = self.drw.temp_context(sw, sh)?;
+        let (prompt_w, prompt_h) = self.prompt.current_extent(&mut ctx, 1.0)?;
+        let (input_w, input_h) = self.txt.current_extent(&mut ctx, 1.0)?;
+
+        // TODO: work out why extent still isn't right
+        self.w = (prompt_w + input_w) * 1.1;
+        self.h = (prompt_h + input_h) * 1.1;
+
+        let (_, _, w, h) = screen_region
             .scale_w(w_max)
             .scale_h(h_max)
             .centered_in(&screen_region)
-            .unwrap(); // We know we are bounded by screen_region
+            .unwrap() // We know we are bounded by screen_region
+            .values();
 
-        let (x, y, w, h) = r.values();
-        self.w = w as f64;
-        self.h = h as f64;
+        let w_max = w as f64;
+        let h_max = h as f64;
 
-        let mut id =
-            self.drw
-                .new_window(WinType::InputOutput(Atom::NetWindowTypeDialog), r, true)?;
-
-        let mut ctx = self.drw.context_for(id)?;
-        let (prompt_w, prompt_h) = self.prompt.current_extent(&mut ctx, 1.0)?;
-        let (input_w, input_h) = self.txt.current_extent(&mut ctx, 1.0)?;
-        let w = (prompt_w + input_w) * 1.1;
-        let h = (prompt_h + input_h) * 1.1;
-
-        if r.contains(&Region::new(x, y, w as u32, h as u32)) {
-            self.drw.destroy_window(id);
-            self.drw.flush(id);
-            self.w = w;
-            self.h = h;
-
-            id = self.drw.new_window(
-                WinType::InputOutput(Atom::NetWindowTypeDialog),
-                Region::new(0, 0, w as u32, h as u32)
-                    .centered_in(&screen_region)
-                    .unwrap(),
-                true,
-            )?;
+        if self.w > w_max || self.h > h_max {
+            self.w = w_max;
+            self.h = h_max;
         }
+
+        let id = self.drw.new_window(
+            WinType::InputOutput(Atom::NetWindowTypeDialog),
+            Region::new(0, 0, self.w as u32, self.h as u32)
+                .centered_in(&screen_region)
+                .unwrap(),
+            true,
+        )?;
 
         self.drw.flush(id);
         self.id = Some(id);
@@ -247,11 +133,7 @@ where
         Ok(())
     }
 
-    fn redraw(&mut self, patt: &str, matches: &[(usize, &String)], selected: usize) -> Result<()> {
-        self.patt.set_text(patt);
-        let lines = matches.iter().map(|(_, line)| line.to_string()).collect();
-        self.txt.set_input(lines, selected);
-
+    fn redraw(&mut self) -> Result<()> {
         let id = self.id.unwrap();
         let mut ctx = self.drw.context_for(id)?;
 
@@ -284,7 +166,7 @@ where
     ) -> Result<PMenuMatch> {
         let input: Vec<String> = input.into_iter().map(|s| s.into()).collect();
         self.prompt.set_text(prompt);
-        self.txt.set_input(input.clone(), 0);
+        self.txt.set_input(input.clone())?;
         self.txt.set_max_lines(if max_lines < input.len() {
             max_lines
         } else {
@@ -300,67 +182,54 @@ where
     }
 
     fn get_selection_inner(&mut self, input: Vec<String>) -> Result<PMenuMatch> {
-        let mut patt = String::new();
         let mut matches: Vec<(usize, &String)> = input.iter().enumerate().collect();
-        let mut selected = 0;
-
         let matcher = SkimMatcherV2::default();
 
         loop {
             if let KeyPressResult::KeyPress(k) = self.drw.next_keypress() {
                 match k {
-                    KeyPress::Return if selected < matches.len() => {
-                        let m = matches[selected];
+                    KeyPress::Return if self.txt.selected_index() < matches.len() => {
+                        let m = matches[self.txt.selected_index()];
                         return Ok(PMenuMatch::Line(m.0, m.1.clone()));
                     }
 
                     KeyPress::Escape | KeyPress::Return => {
+                        let patt = self.patt.get_text();
                         return if patt.is_empty() {
                             Ok(PMenuMatch::NoMatch)
                         } else {
-                            Ok(PMenuMatch::UserInput(patt))
+                            Ok(PMenuMatch::UserInput(patt.clone()))
                         };
                     }
 
-                    KeyPress::Backspace => {
-                        if patt.len() > 0 {
-                            patt.pop();
-                        }
+                    KeyPress::Backspace | KeyPress::Utf8(_) => {
+                        self.patt.handle_keypress(k)?;
+
+                        let mut scored = input
+                            .iter()
+                            .enumerate()
+                            .flat_map(|(i, line)| {
+                                matcher
+                                    .fuzzy_match(line, self.patt.get_text())
+                                    .map(|score| (score, (i, line)))
+                            })
+                            .collect::<Vec<_>>();
+
+                        scored.sort_by_key(|(score, _)| -*score);
+                        matches = scored.into_iter().map(|(_, data)| data).collect();
+                        let lines = matches.iter().map(|(_, line)| line.to_string()).collect();
+                        self.txt.set_input(lines)?;
                     }
 
-                    KeyPress::Up => {
-                        if selected > 0 {
-                            selected -= 1
-                        }
-                    }
-                    KeyPress::Down => {
-                        if !matches.is_empty() && selected < matches.len() - 1 {
-                            selected += 1
-                        }
-                    }
-
-                    KeyPress::Utf8(c) => {
-                        patt.push_str(&c);
-                        selected = 0;
+                    KeyPress::Up | KeyPress::Down => {
+                        self.txt.handle_keypress(k)?;
                     }
 
                     _ => continue,
                 };
             }
 
-            let mut scored = input
-                .iter()
-                .enumerate()
-                .flat_map(|(i, line)| {
-                    matcher
-                        .fuzzy_match(line, &patt)
-                        .map(|score| (score, (i, line)))
-                })
-                .collect::<Vec<_>>();
-
-            scored.sort_by_key(|(score, _)| -*score);
-            matches = scored.into_iter().map(|(_, data)| data).collect();
-            self.redraw(&patt, &matches, selected)?;
+            self.redraw()?;
         }
     }
 }
