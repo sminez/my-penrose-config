@@ -6,27 +6,28 @@
 #[macro_use]
 extern crate penrose;
 
-#[macro_use]
-extern crate log;
-
 use penrose::{
-    contrib::extensions::Scratchpad,
+    contrib::{
+        actions::update_monitors_via_xrandr,
+        extensions::{dmenu::*, Scratchpad},
+        hooks::AutoSetMonitorsViaXrandr,
+    },
     core::{
-        bindings::MouseEvent,
+        bindings::{KeyEventHandler, MouseEvent},
         config::Config,
-        helpers::{index_selectors, spawn, spawn_for_output},
+        data_types::RelativePosition,
+        helpers::{index_selectors, spawn},
         hooks::Hooks,
         layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
         manager::WindowManager,
         ring::Selector,
     },
     draw::{dwm_bar, TextStyle},
-    xcb::{new_xcb_backed_window_manager, Api, XcbConnection, XcbDraw},
+    logging_error_handler,
+    xcb::{new_xcb_backed_window_manager, XcbConnection, XcbDraw},
     Backward, Forward, Less, More, Result,
 };
-use penrose_sminez::actions::{
-    update_monitors_via_xrandr, AutoSetMonitorsViaXrandr, XrandrMonitorPosition::Right,
-};
+
 use simplelog::{LevelFilter, SimpleLogger};
 use std::env;
 
@@ -49,9 +50,11 @@ const FOLLOW_FOCUS_CONF: LayoutConf = LayoutConf {
     allow_wrapping: true,
 };
 
+const TERMINAL: &str = "alacritty";
+
 // NOTE: Declaring these as type aliases here so that changing XConn impls at a later date
 //       is simply a case of updating these definitions (for the most part)
-type Conn = XcbConnection<Api>;
+type Conn = XcbConnection;
 type Wm = WindowManager<Conn>;
 
 // Helper function
@@ -66,23 +69,52 @@ fn set_log_level() {
     };
 }
 
+fn power_menu() -> KeyEventHandler<Conn> {
+    Box::new(move |wm: &mut Wm| {
+        let options = vec!["lock", "logout", "restart-wm", "shutdown", "reboot"];
+        let menu = DMenu::new(">>> ", options, DMenuConfig::default());
+        let screen_index = wm.active_screen_index();
+
+        if let Ok(MenuMatch::Line(_, choice)) = menu.run(screen_index) {
+            match choice.as_ref() {
+                "lock" => spawn("xautolock -locknow"),
+                "logout" => spawn("pkill x"),
+                "shutdown" => spawn("sudo shutdown -h now"),
+                "reboot" => spawn("sudo reboot"),
+                "restart-wm" => wm.exit(),
+                _ => unimplemented!(),
+            }
+        } else {
+            Ok(())
+        }
+    })
+}
+
+fn redetect_monitors() -> KeyEventHandler<Conn> {
+    Box::new(move |_: &mut Wm| {
+        update_monitors_via_xrandr("eDP-1", "HDMI-2", RelativePosition::Right)
+    })
+}
+
 fn main() -> Result<()> {
     set_log_level();
 
-    let mut config = Config::default();
-    config
+    let config = Config::default()
+        .builder()
         .workspaces(vec!["1", "2", "3", "4", "5", "6", "7", "8", "9"])
         .floating_classes(vec!["rofi", "dmenu", "dunst", "polybar", "pinentry-gtk-2"])
         .layouts(vec![
             Layout::new("[side]", LayoutConf::default(), side_stack, N_MAIN, RATIO),
             Layout::new("[botm]", LayoutConf::default(), bottom_stack, N_MAIN, RATIO),
             Layout::new("[mono]", FOLLOW_FOCUS_CONF, monocle, N_MAIN, RATIO),
-        ]);
+        ])
+        .build()
+        .unwrap();
 
-    let sp = Scratchpad::new("st", 0.8, 0.8);
+    let sp = Scratchpad::new(TERMINAL, 0.8, 0.8);
     let hooks: Hooks<Conn> = vec![
         sp.get_hook(),
-        AutoSetMonitorsViaXrandr::new("eDP-1", "HDMI-2", Right),
+        AutoSetMonitorsViaXrandr::new("eDP-1", "HDMI-2", RelativePosition::Right),
         Box::new(dwm_bar(
             XcbDraw::new()?,
             HEIGHT,
@@ -95,37 +127,20 @@ fn main() -> Result<()> {
             },
             BLUE, // highlight
             GREY, // empty_ws
-            config.workspaces.clone(),
+            config.workspaces().clone(),
         )?),
     ];
-
-    let home = env::var("HOME").unwrap();
-    let script = format!("{}/bin/scripts/power-menu.sh", home);
-
-    let power_menu = Box::new(move |wm: &mut Wm| {
-        if let Ok(o) = spawn_for_output(&script) {
-            if o.as_str() == "restart-wm\n" {
-                wm.exit();
-            }
-        }
-    });
-
-    let redetect_monitors = Box::new(move |_: &mut Wm| {
-        if let Err(e) = update_monitors_via_xrandr("eDP-1", "HDMI-2", Right) {
-            error!("unable to set monitors via xrandr: {}", e);
-        }
-    });
 
     let key_bindings = gen_keybindings! {
         // Program launch
         "M-semicolon" => run_external!("rofi-apps");
-        "M-Return" => run_external!("st");
+        "M-Return" => run_external!(TERMINAL);
 
         // actions
         "M-A-s" => run_external!("screenshot");
-        "M-A-k" => run_external!("toggle-kb-for-tada");
         "M-A-l" => run_external!("lock-screen");
-        "M-A-m" => redetect_monitors;
+        "M-A-m" => redetect_monitors();
+        "M-A-Escape" => power_menu();
         "M-slash" => sp.toggle();
 
         // client management
@@ -137,6 +152,7 @@ fn main() -> Result<()> {
         "M-C-bracketright" => run_internal!(client_to_screen, &Selector::Index(1));
         "M-S-f" => run_internal!(toggle_client_fullscreen, &Selector::Focused);
         "M-S-q" => run_internal!(kill_client);
+
         // workspace management
         "M-Tab" => run_internal!(toggle_workspace);
         "M-A-period" => run_internal!(cycle_workspace, Forward);
@@ -154,11 +170,10 @@ fn main() -> Result<()> {
         "M-A-Right" => run_internal!(update_main_ratio, More);
         "M-A-Left" => run_internal!(update_main_ratio, Less);
         "M-A-C-Escape" => run_internal!(exit);
-        "M-A-Escape" => power_menu;
 
         refmap [ config.ws_range() ] in {
-            "M-{}" => focus_workspace [ index_selectors(config.workspaces.len()) ];
-            "M-S-{}" => client_to_workspace [ index_selectors(config.workspaces.len()) ];
+            "M-{}" => focus_workspace [ index_selectors(config.workspaces().len()) ];
+            "M-S-{}" => client_to_workspace [ index_selectors(config.workspaces().len()) ];
         };
     };
 
@@ -167,10 +182,11 @@ fn main() -> Result<()> {
         Press Left + [Meta] => |wm: &mut Wm, _: &MouseEvent| wm.cycle_workspace(Backward)
     };
 
-    let mut wm = new_xcb_backed_window_manager(config, hooks)?;
+    let mut wm = new_xcb_backed_window_manager(config, hooks, logging_error_handler())?;
 
-    spawn(format!("{}/bin/scripts/penrose-startup.sh", home));
-    wm.grab_keys_and_run(key_bindings, mouse_bindings);
+    let home = env::var("HOME").unwrap();
+    spawn(format!("{}/bin/scripts/penrose-startup.sh", home))?;
+    wm.grab_keys_and_run(key_bindings, mouse_bindings)?;
 
     Ok(())
 }

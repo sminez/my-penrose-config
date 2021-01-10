@@ -361,7 +361,17 @@ dependencies = [
  "fuzzy-matcher",
  "log",
  "penrose",
+ "penrose_menu",
  "simplelog",
+]
+
+[[package]]
+name = "penrose_menu"
+version = "0.1.0"
+dependencies = [
+ "fuzzy-matcher",
+ "log",
+ "penrose",
 ]
 
 [[package]]
