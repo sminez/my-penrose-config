@@ -348,6 +348,8 @@ dependencies = [
  "nix",
  "pango",
  "pangocairo",
+ "penrose_keysyms",
+ "penrose_proc",
  "strum 0.19.5",
  "strum_macros 0.19.4",
  "thiserror",
@@ -366,12 +368,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "penrose_keysyms"
+version = "0.1.0"
+dependencies = [
+ "strum 0.19.5",
+ "strum_macros 0.19.4",
+]
+
+[[package]]
 name = "penrose_menu"
 version = "0.1.0"
 dependencies = [
  "fuzzy-matcher",
  "log",
  "penrose",
+]
+
+[[package]]
+name = "penrose_proc"
+version = "0.1.2"
+dependencies = [
+ "penrose_keysyms",
+ "proc-macro2",
+ "quote",
+ "strum 0.19.5",
+ "syn",
 ]
 
 [[package]]

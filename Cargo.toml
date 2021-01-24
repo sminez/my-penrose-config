@@ -7,7 +7,7 @@ edition = "2018"
 [[bin]]
 doc = false
 name = "penrose"
-path = "src/wm/main.rs"
+path = "src/main.rs"
 
 [[bin]]
 doc = false
@@ -17,6 +17,6 @@ path = "src/pmenu/main.rs"
 [dependencies]
 fuzzy-matcher = "0.3.7"
 log = "0.4.8"
-penrose = { path = "/home/innes/repos/personal/penrose", features = [ "xcb", "xcb_draw", "xcb_keysyms" ] }
+penrose = { path = "/home/innes/repos/personal/penrose", features = [ "xcb", "xcb_draw", "keysyms" ] }
 penrose_menu = { path = "/home/innes/repos/personal/penrose/crates/penrose_menu" }
 simplelog = "0.8.0"

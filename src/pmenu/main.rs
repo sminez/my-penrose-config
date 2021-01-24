@@ -1,6 +1,6 @@
 //! A penrose Draw backed implementation of dmenu
 use penrose::{
-    contrib::extensions::{notify_send, DMenu, DMenuConfig, MenuMatch, NotifyConfig},
+    contrib::extensions::{DMenu, DMenuConfig, MenuMatch},
     xcb::XcbDraw,
     Result,
 };
@@ -20,9 +20,8 @@ fn _pmenu() -> Result<()> {
     stdin.read_to_string(&mut buffer).unwrap();
     let lines = buffer.trim().split('\n').map(|s| s.to_string()).collect();
 
-    let drw = XcbDraw::new()?;
     let mut p = PMenu::new(
-        drw,
+        XcbDraw::new()?,
         PMenuConfig {
             show_line_numbers: true,
             ..PMenuConfig::default()
@@ -38,13 +37,11 @@ fn _pmenu() -> Result<()> {
     Ok(())
 }
 
-fn main() -> Result<()> {
+fn _dmenu() -> Result<()> {
     let mut buffer = String::new();
     let mut stdin = io::stdin();
     stdin.read_to_string(&mut buffer).unwrap();
     let lines = buffer.trim().split('\n').map(|s| s.to_string()).collect();
-
-    notify_send("hi!", "this should work", NotifyConfig::default())?;
 
     let menu = DMenu::new(
         ">>>",
@@ -62,4 +59,8 @@ fn main() -> Result<()> {
     }
 
     Ok(())
+}
+
+fn main() -> Result<()> {
+    _pmenu()
 }

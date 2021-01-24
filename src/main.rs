@@ -171,9 +171,9 @@ fn main() -> Result<()> {
         "M-A-Left" => run_internal!(update_main_ratio, Less);
         "M-A-C-Escape" => run_internal!(exit);
 
-        refmap [ config.ws_range() ] in {
-            "M-{}" => focus_workspace [ index_selectors(config.workspaces().len()) ];
-            "M-S-{}" => client_to_workspace [ index_selectors(config.workspaces().len()) ];
+        map: { "1", "2", "3", "4", "5", "6", "7", "8", "9" } to index_selectors(9) => {
+            "M-{}" => focus_workspace (REF);
+            "M-S-{}" => client_to_workspace (REF);
         };
     };
 
@@ -186,7 +186,6 @@ fn main() -> Result<()> {
 
     let home = env::var("HOME").unwrap();
     spawn(format!("{}/bin/scripts/penrose-startup.sh", home))?;
-    wm.grab_keys_and_run(key_bindings, mouse_bindings)?;
 
-    Ok(())
+    wm.grab_keys_and_run(key_bindings, mouse_bindings)
 }
