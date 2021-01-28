@@ -49,7 +49,7 @@ pub fn redetect_monitors() -> KeyEventHandler<Conn> {
 // Run k to view snippets and open a url if one is available
 pub fn k_open(float_class: &'static str) -> KeyEventHandler<Conn> {
     Box::new(move |_: &mut Wm| {
-        thread::spawn(move || spawn!("/home/innes/bin/scripts/k-penrose.sh", float_class));
+        thread::spawn(move || spawn!("/usr/local/scripts/k-penrose.sh", float_class));
         Ok(())
     })
 }

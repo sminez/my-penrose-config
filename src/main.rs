@@ -35,7 +35,7 @@ use penrose_sminez::{
     PROFONT, QT_CONSOLE, TERMINAL, WHITE,
 };
 
-use std::{convert::TryFrom, env};
+use std::convert::TryFrom;
 
 fn main() -> Result<()> {
     set_log_level();
@@ -131,8 +131,7 @@ fn main() -> Result<()> {
 
     let mut wm = new_xcb_backed_window_manager(config, hooks, logging_error_handler())?;
 
-    let home = env::var("HOME").unwrap();
-    spawn(format!("{}/bin/scripts/penrose-startup.sh", home))?;
+    spawn("/usr/local/scripts/penrose-startup.sh")?;
 
     wm.grab_keys_and_run(key_bindings, mouse_bindings)
 }
