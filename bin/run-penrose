@@ -3,6 +3,6 @@
 while true; do
   # log out to a file
   penrose &> ~/.penrose.log
-  mv ~/.penrose.log ~/prev-penrose.log
+  [[ $? > 0 ]] && mv ~/.penrose.log ~/prev-penrose.log
   export RESTARTED=true
 done

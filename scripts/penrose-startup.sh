@@ -40,4 +40,4 @@ running gnome-keyring-daemon || gnome-keyring-daemon --start --components=pkcs11
 /usr/local/scripts/penrose-stat.zsh &
 
 # see /usr/local/bin/run-penrose
-[[ -z "$RESTARTED" ]] && /usr/local/bin/unlock-ssh.sh &
+[[ -z "$RESTARTED" ]] && /usr/local/scripts/unlock-ssh.sh &
