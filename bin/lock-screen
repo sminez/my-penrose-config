@@ -1,4 +1,4 @@
 #! /bin/bash
 # Run the multi-monitor aware lock script with a custom icon and font
 # The script itself is `i3lock-fancy`
-bash ~/bin/scripts/lock --pixelate --font ProFont-for-Powerline
+bash /usr/local/scripts/lock --pixelate --font ProFont-for-Powerline
