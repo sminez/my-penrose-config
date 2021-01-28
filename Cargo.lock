@@ -342,6 +342,7 @@ dependencies = [
 name = "penrose"
 version = "0.2.0"
 dependencies = [
+ "bitflags",
  "cairo-rs",
  "cairo-sys-rs",
  "log",

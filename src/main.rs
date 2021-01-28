@@ -8,7 +8,11 @@ extern crate penrose;
 extern crate penrose_sminez;
 
 use penrose::{
-    contrib::{actions::focus_or_spawn, extensions::Scratchpad, hooks::AutoSetMonitorsViaXrandr},
+    contrib::{
+        actions::focus_or_spawn,
+        extensions::Scratchpad,
+        hooks::{AutoSetMonitorsViaXrandr, ManageExistingClients},
+    },
     core::{
         bindings::MouseEvent,
         config::Config,
@@ -51,9 +55,10 @@ fn main() -> Result<()> {
 
     let sp = Scratchpad::new(TERMINAL, 0.8, 0.8);
     let hooks: Hooks<Conn> = vec![
-        sp.get_hook(),
+        ManageExistingClients::new(),
         AutoSetMonitorsViaXrandr::new(MON_1, MON_2, RelativePosition::Right),
         CenterFloat::new(FLOAT_CLASS, 0.9),
+        sp.get_hook(),
         Box::new(dwm_bar(
             XcbDraw::new()?,
             HEIGHT,
@@ -83,7 +88,7 @@ fn main() -> Result<()> {
         "M-A-m" => redetect_monitors();
         "M-A-Escape" => power_menu();
         "M-slash" => sp.toggle();
-        "M-S-slash" => k_open(BROWSER, FLOAT_CLASS);
+        "M-S-slash" => k_open(FLOAT_CLASS);
 
         // client management
         "M-j" => run_internal!(cycle_client, Forward);

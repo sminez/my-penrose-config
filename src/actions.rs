@@ -47,28 +47,9 @@ pub fn redetect_monitors() -> KeyEventHandler<Conn> {
 }
 
 // Run k to view snippets and open a url if one is available
-pub fn k_open(browser: &'static str, float_class: &'static str) -> KeyEventHandler<Conn> {
-    Box::new(move |wm: &mut Wm| {
-        let screen_index = wm.active_screen_index();
-        thread::spawn(move || {
-            let urls = spawn_for_output!("/home/innes/bin/scripts/k-penrose.sh", float_class)?;
-
-            let url = match urls.len() {
-                0 => return Ok(()),
-                1 => urls[0].clone(),
-                _ => {
-                    let menu = DMenu::new("open: ", urls, DMenuConfig::default());
-                    if let Ok(MenuMatch::Line(_, url)) = menu.run(screen_index) {
-                        url
-                    } else {
-                        return Ok(());
-                    }
-                }
-            };
-
-            spawn!(browser, &url)
-        });
-
+pub fn k_open(float_class: &'static str) -> KeyEventHandler<Conn> {
+    Box::new(move |_: &mut Wm| {
+        thread::spawn(move || spawn!("/home/innes/bin/scripts/k-penrose.sh", float_class));
         Ok(())
     })
 }
