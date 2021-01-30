@@ -1,5 +1,3 @@
-PREFIX = /usr/local
-
 # TODO: manpages?
 #       other binaries
 
@@ -14,27 +12,29 @@ build:
 .PHONY: install
 install:
 	@echo ":: Installing binaries..."
-	@mkdir -p ${PREFIX}/bin
-	@cp -f target/release/penrose ${PREFIX}/bin
-	@cp -f bin/lock-screen ${PREFIX}/bin
-	@cp -f bin/rofi-apps ${PREFIX}/bin
-	@cp -f bin/run-penrose ${PREFIX}/bin
-	@chmod 755 ${PREFIX}/bin/penrose
-	@chmod 755 ${PREFIX}/bin/lock-screen
-	@chmod 755 ${PREFIX}/bin/rofi-apps
-	@chmod 755 ${PREFIX}/bin/run-penrose
+	@mkdir -p /usr/local/bin
+	@cp -f target/release/penrose /usr/local/bin
+	@cp -f target/release/pmenu /usr/local/bin
+	@cp -f bin/lock-screen /usr/local/bin
+	@cp -f bin/rofi-apps /usr/local/bin
+	@cp -f bin/run-penrose /usr/local/bin
+	@chmod 755 /usr/local/bin/penrose
+	@chmod 755 /usr/local/bin/lock-screen
+	@chmod 755 /usr/local/bin/rofi-apps
+	@chmod 755 /usr/local/bin/run-penrose
 	@echo ":: Installing utility scripts..."
-	@cp -r scripts ${PREFIX}
-	@ls scripts | grep -v lock.png | xargs -I {} chmod 755 ${PREFIX}/scripts/{}
+	@cp -r scripts /usr/local
+	@ls scripts | grep -v lock.png | xargs -I {} chmod 755 /usr/local/scripts/{}
 	@echo ":: Done"
 
 .PHONY: uninstall
 uninstall:
 	@echo ":: Removing binaries..."
-	@rm -f ${PREFIX}/bin/penrose\
-		${PREFIX}/bin/lock-screen\
-		${PREFIX}/bin/rofi-apps\
-		${PREFIX}/bin/run-penrose
+	@rm -f /usr/local/bin/penrose\
+		/usr/local/bin/pmenu\
+		/usr/local/bin/lock-screen\
+		/usr/local/bin/rofi-apps\
+		/usr/local/bin/run-penrose
 	@echo ":: Removing scripts..."
-	@ls scripts | xargs -I {} rm -f ${PREFIX}/scripts/{}
+	@ls scripts | xargs -I {} rm -f /usr/local/scripts/{}
 	@echo ":: Done"

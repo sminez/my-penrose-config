@@ -40,7 +40,14 @@ use std::convert::TryFrom;
 fn main() -> Result<()> {
     set_log_level();
 
-    let floating_classes = vec!["rofi", "dmenu", "dunst", "pinentry-gtk-2", FLOAT_CLASS];
+    let floating_classes = vec![
+        "rofi",
+        "penrose-menu",
+        "dmenu",
+        "dunst",
+        "pinentry-gtk-2",
+        FLOAT_CLASS,
+    ];
     let config = Config::default()
         .builder()
         .workspaces(vec!["1", "2", "3", "4", "5", "6", "7", "8", "9"])
