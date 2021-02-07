@@ -16,6 +16,9 @@ xrandr --output HDMI-2 --auto --right-of eDP-1 &
 xinput --set-prop "11" "libinput Tapping Enabled" 1
 xinput --set-prop "12" "libinput Accel Speed" 0.0
 
+# Keyboard overrides
+setxkbmap -option caps:ctrl_modifier
+
 xsetroot -cursor_name left_ptr
 
 running() { pgrep -fi "$1" >/dev/null; }
