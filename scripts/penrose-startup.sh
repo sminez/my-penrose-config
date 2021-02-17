@@ -23,8 +23,8 @@ xsetroot -cursor_name left_ptr
 
 running() { pgrep -fi "$1" >/dev/null; }
 
-running kdeconnnectd || /usr/lib/kdeconnectd &
-running picom || picom &
+# running kdeconnnectd || /usr/lib/kdeconnectd &
+# running picom || picom &
 running nm-applet || nm-applet &
 running udiskie || udiskie -a -n -t &
 running xautolock || xautolock \
