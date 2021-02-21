@@ -1,8 +1,11 @@
-#![deny(clippy::all)]
+#![deny(clippy::all, rust_2018_idioms)]
 /// My personal penrose config (build from the head of develop)
 
 #[macro_use]
 extern crate penrose;
+
+#[macro_use]
+extern crate tracing;
 
 #[macro_use]
 extern crate penrose_sminez;
@@ -10,11 +13,11 @@ extern crate penrose_sminez;
 use penrose::{
     contrib::{
         actions::focus_or_spawn,
-        extensions::Scratchpad,
+        extensions::{dmenu::*, Scratchpad},
         hooks::{AutoSetMonitorsViaXrandr, ManageExistingClients},
     },
     core::{
-        bindings::MouseEvent,
+        bindings::{KeyEventHandler, MouseEvent},
         config::Config,
         data_types::RelativePosition,
         helpers::{index_selectors, spawn},
@@ -27,9 +30,10 @@ use penrose::{
     xcb::{new_xcb_backed_window_manager, XcbDraw},
     Backward, Forward, Less, More, Result,
 };
+use tracing_subscriber::{self, filter::EnvFilter, prelude::*};
 
 use penrose_sminez::{
-    actions::{k_open, power_menu, redetect_monitors, set_log_level},
+    actions::{k_open, power_menu, redetect_monitors},
     hooks::CenterFloat,
     Conn, Wm, BLACK, BLUE, BROWSER, FLOAT_CLASS, FOLLOW_FOCUS_CONF, GREY, HEIGHT, MON_1, MON_2,
     PROFONT, QT_CONSOLE, TERMINAL, WHITE,
@@ -38,7 +42,50 @@ use penrose_sminez::{
 use std::convert::TryFrom;
 
 fn main() -> Result<()> {
-    set_log_level();
+    // NOTE: Setting up tracing with dynamic filter updating inline as getting the type for
+    // the reload Handle to work is a massive pain... this really should be in its own method
+    // somewhere as the example here: https://github.com/tokio-rs/tracing/blob/master/examples/examples/tower-load.rs
+    // _really_ seems to show that Handle only has a single type param, but when I try it in here
+    // it complains about needing a second (phantom data) param as well?
+    //
+    // It's also possible to output JSON logs for later parsing but using the `set_trace_filter`
+    // command and providing a specialiased filter is almost always going to be easier I think
+    let tracing_builder = tracing_subscriber::fmt()
+        // .json()
+        // .flatten_event(true)
+        .pretty()
+        .with_env_filter("info")
+        .with_filter_reloading();
+
+    let reload_handle = tracing_builder.reload_handle();
+    tracing_builder.finish().init();
+
+    // Use dmenu to set a new tracing filter while penrose is running.
+    // Syntax for the filters themselves can be found at `doc_url`
+    let set_trace_filter = Box::new(move |wm: &mut Wm| {
+        let options = vec!["show_docs", "trace", "debug", "info"];
+        let doc_url = "https://docs.rs/tracing-subscriber/0.2.16/tracing_subscriber/filter/struct.EnvFilter.html";
+        let menu = DMenu::new("filter: ", options, DMenuConfig::default());
+        let new_filter = match menu.run(wm.active_screen_index())? {
+            MenuMatch::Line(_, selection) if &selection == "show docs" => {
+                return spawn!(format!("qutebrowser {}", doc_url));
+            }
+            MenuMatch::Line(_, level) => level,
+            MenuMatch::UserInput(custom) => custom,
+            MenuMatch::NoMatch => return Ok(()),
+        };
+
+        warn!(?new_filter, "attempting to update tracing filter");
+        let f = new_filter
+            .parse::<EnvFilter>()
+            .map_err(|e| perror!("invalid filter: {}", e))?;
+        warn!("reloading tracing handle");
+        reload_handle
+            .reload(f)
+            .map_err(|e| perror!("unable to set filter: {}", e))
+    }) as KeyEventHandler<Conn>;
+
+    // Now build the rest of the config
 
     let floating_classes = vec![
         "rofi",
@@ -93,6 +140,7 @@ fn main() -> Result<()> {
         "M-A-s" => run_external!("screenshot");
         "M-A-l" => run_external!("lock-screen");
         "M-A-m" => redetect_monitors();
+        "M-A-t" => set_trace_filter;
         "M-A-Escape" => power_menu();
         "M-slash" => sp.toggle();
         "M-S-slash" => k_open(FLOAT_CLASS);

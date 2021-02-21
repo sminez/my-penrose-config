@@ -16,8 +16,7 @@ path = "src/pmenu/main.rs"
 
 [dependencies]
 clap = "3.0.0-beta.2"
-fuzzy-matcher = "0.3.7"
-log = "0.4.8"
-penrose = { path = "/home/innes/repos/personal/penrose", features = [ "xcb", "xcb_draw", "keysyms" ] }
+penrose = { path = "/home/innes/repos/personal/penrose", features = [ "xcb", "xcb_draw", "keysyms", "serde" ] }
 penrose_menu = { path = "/home/innes/repos/personal/penrose/crates/penrose_menu" }
-simplelog = "0.8.0"
+tracing = "0.1"
+tracing-subscriber = "0.2"

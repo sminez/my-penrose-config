@@ -7,6 +7,7 @@
 # Make sure we only run once
 pid=$$
 pgrep -fi penrose-startup.sh | grep -v "^$pid$" | xargs kill
+pgrep -fi penrose-stat.zsh | xargs kill
 
 # Set screen resolutions (add additional screens here)
 xrandr --output HDMI-2 --auto --right-of eDP-1 &

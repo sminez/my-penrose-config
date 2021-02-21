@@ -3,21 +3,9 @@ use penrose::{
     core::{bindings::KeyEventHandler, data_types::RelativePosition},
 };
 
-use simplelog::{LevelFilter, SimpleLogger};
-use std::{env, thread};
+use std::thread;
 
 use crate::{Conn, Wm, MON_1, MON_2};
-
-// Default to info level logging unless the env var is set to enable debug
-pub fn set_log_level() {
-    let log_level = match env::var(crate::DEBUG_ENV_VAR) {
-        Ok(val) if &val == "true" => LevelFilter::Debug,
-        _ => LevelFilter::Info,
-    };
-    if let Err(e) = SimpleLogger::init(log_level, simplelog::Config::default()) {
-        panic!("unable to set log level: {}", e);
-    };
-}
 
 // A dmenu based power menu for common actions
 pub fn power_menu() -> KeyEventHandler<Conn> {
