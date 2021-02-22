@@ -16,10 +16,13 @@ install:
 	@cp -f target/release/penrose /usr/local/bin
 	@cp -f target/release/pmenu /usr/local/bin
 	@cp -f bin/lock-screen /usr/local/bin
+	@cp -f bin/p_log /usr/local/bin
 	@cp -f bin/rofi-apps /usr/local/bin
 	@cp -f bin/run-penrose /usr/local/bin
 	@chmod 755 /usr/local/bin/penrose
+	@chmod 755 /usr/local/bin/pmenu
 	@chmod 755 /usr/local/bin/lock-screen
+	@chmod 755 /usr/local/bin/p_log
 	@chmod 755 /usr/local/bin/rofi-apps
 	@chmod 755 /usr/local/bin/run-penrose
 	@echo ":: Installing utility scripts..."
@@ -33,6 +36,7 @@ uninstall:
 	@rm -f /usr/local/bin/penrose\
 		/usr/local/bin/pmenu\
 		/usr/local/bin/lock-screen\
+		/usr/local/bin/p_log\
 		/usr/local/bin/rofi-apps\
 		/usr/local/bin/run-penrose
 	@echo ":: Removing scripts..."
