@@ -21,10 +21,13 @@ is not recommended: if you only want pretty log output on its own then just use 
 in mechanisms from tracing-subscriber itself). Example usage is like so:
 
     # For analysing a snapshot of log data after the fact
-    $ cat ~/.penrose.log | ./p_log.py
+    $ cat ~/.penrose.log | p_log
 
     # For tailing JSON logs in a more readable format while Penrose is running
-    $ tail -f ~/.penrose.log | ./p_log.py
+    $ tail -f ~/.penrose.log | p_log
+
+    # Assume the default log file position of ~/.penrose.log
+    $ p_log
 
 
 Simple regex `grep` for filtering log lines is possible as a positional argument
@@ -36,9 +39,11 @@ alter you logging filter while Penrose is running.
 """
 import argparse
 import json
+import os
 import re
 import sys
 
+LOG_FILE = os.path.expanduser("~/.penrose.log")
 DEFAULT_KEYS = ["timestamp", "level", "message", "target", "span", "spans"]
 PREFIX = " " * 25
 INDENT = "  "
@@ -70,7 +75,12 @@ KV_COLOR = "yellow"
 def main(lift, span_rows, grep):
     grep = re.compile(grep) if grep else None
 
-    for line in sys.stdin:
+    if not sys.stdin.isatty():
+        f = sys.stdin
+    else:
+        f = open(LOG_FILE, 'r')
+
+    for line in f:
         if not grep or grep.findall(line):
             pretty_print_line(line, lift, span_rows)
 
