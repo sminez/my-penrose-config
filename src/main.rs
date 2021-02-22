@@ -47,13 +47,9 @@ fn main() -> Result<()> {
     // somewhere as the example here: https://github.com/tokio-rs/tracing/blob/master/examples/examples/tower-load.rs
     // _really_ seems to show that Handle only has a single type param, but when I try it in here
     // it complains about needing a second (phantom data) param as well?
-    //
-    // It's also possible to output JSON logs for later parsing but using the `set_trace_filter`
-    // command and providing a specialiased filter is almost always going to be easier I think
     let tracing_builder = tracing_subscriber::fmt()
-        // .json()
-        // .flatten_event(true)
-        .pretty()
+        .json() // JSON logs
+        .flatten_event(true)
         .with_env_filter("info")
         .with_filter_reloading();
 
