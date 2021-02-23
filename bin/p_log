@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# vim:ft=python
 """
 Pretty print for Penrose JSON trace data using ANSI color codes.
 
@@ -24,10 +25,11 @@ in mechanisms from tracing-subscriber itself). Example usage is like so:
     $ cat ~/.penrose.log | p_log
 
     # For tailing JSON logs in a more readable format while Penrose is running
-    $ tail -f ~/.penrose.log | p_log
+    $ tail -F ~/.penrose.log | p_log
 
     # Assume the default log file position of ~/.penrose.log
-    $ p_log
+    $ p_log     # cat ~/.penrose.log | p_log
+    $ p_log -f  # tail -F ~/.penrose.log | p_log
 
 
 Simple regex `grep` for filtering log lines is possible as a positional argument
@@ -41,6 +43,7 @@ import argparse
 import json
 import os
 import re
+import subprocess
 import sys
 
 LOG_FILE = os.path.expanduser("~/.penrose.log")
@@ -72,17 +75,29 @@ SPAN_COLOR = "blue"
 KV_COLOR = "yellow"
 
 
-def main(lift, span_rows, grep):
+def main(lift, span_rows, grep, follow):
     grep = re.compile(grep) if grep else None
 
     if not sys.stdin.isatty():
         f = sys.stdin
+    elif follow:
+        f = tail(LOG_FILE)
     else:
-        f = open(LOG_FILE, 'r')
+        f = open(LOG_FILE, "r")
 
-    for line in f:
-        if not grep or grep.findall(line):
-            pretty_print_line(line, lift, span_rows)
+    try:
+        for line in f:
+            if not grep or grep.findall(line):
+                pretty_print_line(line, lift, span_rows)
+    except KeyboardInterrupt:
+        # Allow ^C to close a tail without barfing a stacktrace
+        return
+
+
+def tail(fname):
+    f = subprocess.Popen(["tail", "-F", fname], stdout=subprocess.PIPE)
+    while True:
+        yield f.stdout.readline().decode("utf-8").strip()
 
 
 def pretty_print_line(line, lift=True, span_rows=False):
@@ -178,6 +193,13 @@ if __name__ == "__main__":
         help="a regex pattern to filter lines with before pretty printing",
     )
     parser.add_argument(
+        "-F",
+        "--follow",
+        action="store_true",
+        required=False,
+        help="tail the log file instead of only reading the current contents",
+    )
+    parser.add_argument(
         "--no-lift",
         action="store_true",
         required=False,
@@ -191,4 +213,4 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(not args.no_lift, args.span_rows, args.grep)
+    main(not args.no_lift, args.span_rows, args.grep, args.follow)
