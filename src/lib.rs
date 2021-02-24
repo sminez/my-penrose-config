@@ -47,6 +47,11 @@ pub const FLOAT_CLASS: &str = "floating";
 pub const MON_1: &str = "eDP-1";
 pub const MON_2: &str = "HDMI-2";
 
-pub const TERMINAL: &str = "alacritty";
+// FIXME: alacritty doesn't handle WM_DELETE_WINDOW correctly due to what is (possibly) an opengl
+//        bug (see https://github.com/alacritty/alacritty/issues/4836 for details).
+//        Until that is fixed, I don't want to have to deal with pkill-ing hung, invisible terminal
+//        instances when alacritty leaves processes lying around...
+// pub const TERMINAL: &str = "alacritty";
+pub const TERMINAL: &str = "st";
 pub const BROWSER: &str = "qutebrowser";
 pub const QT_CONSOLE: &str = "jupyter-qtconsole";

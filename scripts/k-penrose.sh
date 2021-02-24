@@ -6,9 +6,14 @@ BROWSER=qutebrowser
 float_class="$1"
 outfile="$(mktemp /tmp/k-urls-XXX)"
 
-alacritty \
-  --class "$float_class" \
-  --command zsh -c "k --no-color | grep -E \"^http\" > $outfile" &
+# FIXME: see comment in src/lib.rs about alacritty
+# alacritty \
+#   --class "$float_class" \
+#   --command zsh -c "k --no-color | grep -E \"^http\" > $outfile" &
+
+st \
+  -n "$float_class" \
+  -e zsh -c "k --no-color | grep -E \"^http\" > $outfile" &
 
 lines=$(echo $outfile | entr -panz cat "$outfile")
 rm "$outfile"
