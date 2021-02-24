@@ -108,8 +108,9 @@ def pretty_print_line(line, lift=True, span_rows=False):
     ts = c(line["timestamp"], TIMESTAMP_COLOR)
     lvl = line["level"]
     lvl = c(lvl.rjust(5), LEVEL_COLORS[lvl], True)
+    msg = line.get("message", line.get("error"))
 
-    print(f"{ts} {lvl}{INDENT * indent}{line['message']}")
+    print(f"{ts} {lvl}{INDENT * indent}{msg}")
 
     if lift:
         lift_meta(line)
