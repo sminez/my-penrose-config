@@ -43,8 +43,8 @@ import argparse
 import json
 import os
 import re
-import subprocess
 import sys
+import time
 
 LOG_FILE = os.path.expanduser("~/.penrose.log")
 DEFAULT_KEYS = ["timestamp", "level", "message", "target", "span", "spans"]
@@ -75,9 +75,7 @@ SPAN_COLOR = "blue"
 KV_COLOR = "yellow"
 
 
-def main(lift, span_rows, grep, follow):
-    grep = re.compile(grep) if grep else None
-
+def main(lift, span_rows, regex, follow):
     if not sys.stdin.isatty():
         f = sys.stdin
     elif follow:
@@ -85,19 +83,30 @@ def main(lift, span_rows, grep, follow):
     else:
         f = open(LOG_FILE, "r")
 
-    try:
-        for line in f:
-            if not grep or grep.findall(line):
-                pretty_print_line(line, lift, span_rows)
-    except KeyboardInterrupt:
-        # Allow ^C to close a tail without barfing a stacktrace
-        return
+    if regex:
+        f = grep(regex, f)
+
+    for line in f:
+        pretty_print_line(line, lift, span_rows)
+
+
+def grep(regex, f):
+    regex = re.compile(regex)
+    for line in f:
+        if regex.findall(line):
+            yield line
 
 
 def tail(fname):
-    f = subprocess.Popen(["tail", "-F", fname], stdout=subprocess.PIPE)
-    while True:
-        yield f.stdout.readline().decode("utf-8").strip()
+    with open(fname, "r") as f:
+        yield from f.readlines()[-6:]
+
+        while True:
+            line = f.readline()
+            if not line:
+                time.sleep(0.1)
+                continue
+            yield line
 
 
 def pretty_print_line(line, lift=True, span_rows=False):
@@ -189,7 +198,7 @@ if __name__ == "__main__":
         description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
-        "grep",
+        "regex",
         nargs="?",
         help="a regex pattern to filter lines with before pretty printing",
     )
@@ -214,4 +223,9 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(not args.no_lift, args.span_rows, args.grep, args.follow)
+
+    try:
+        main(not args.no_lift, args.span_rows, args.regex, args.follow)
+    except KeyboardInterrupt:
+        # Allow ^C to close a tail without barfing a stacktrace
+        pass
