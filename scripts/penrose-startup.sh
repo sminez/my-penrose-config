@@ -6,7 +6,7 @@
 
 # Make sure we only run once
 pid=$$
-pgrep -fi penrose-startup.sh | grep -v "^$pid$" | xargs kill
+pgrep -fi penrose-startup.sh | grep -v "^$pid$" | xargs -I{} kill {}
 pgrep -fi penrose-stat.zsh | xargs kill
 
 # Set screen resolutions (add additional screens here)
@@ -19,29 +19,26 @@ xinput --set-prop "12" "libinput Accel Speed" 0.0
 
 # Keyboard overrides
 setxkbmap -option caps:ctrl_modifier
-
 xsetroot -cursor_name left_ptr
 
-running() { pgrep -fi "$1" >/dev/null; }
-
-# running kdeconnnectd || /usr/lib/kdeconnectd &
-# running picom || picom &
-running nm-applet || nm-applet &
-running udiskie || udiskie -a -n -t &
-running xautolock || xautolock \
+# pkill kdeconnnectd; /usr/lib/kdeconnectd &
+pkill picom; picom &
+pkill nm-applet; nm-applet &
+pkill udiskie; udiskie -a -n -t &
+pkill xautolock; xautolock \
   -detectsleep \
   -time 3 \
   -locker "/usr/local/bin/lock-screen" \
   -notify 30 \
   -notifier "notify-send -u critical -t 120 -- 'LOCKING screen in 30 seconds...'" &
-running volumeicon || volumeicon &
-running dunst || dunst &
-running blueman-applet || blueman-applet &
-running xfce4-power-manager || xfce4-power-manager &
-running gnome-keyring-daemon || gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
+pkill volumeicon; volumeicon &
+pkill dunst; dunst &
+pkill blueman-applet; blueman-applet &
+pkill xfce4-power-manager; xfce4-power-manager &
+pkill gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
 
 "$HOME/.fehbg"
 /usr/local/scripts/penrose-stat.zsh &
 
 # see /usr/local/bin/run-penrose
-[[ -z "$RESTARTED" ]] && /usr/local/scripts/unlock-ssh.sh &
+[[ -z "$RESTARTED" ]]; /usr/local/scripts/unlock-ssh.sh &

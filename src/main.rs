@@ -114,7 +114,7 @@ fn main() -> Result<()> {
             HEIGHT,
             &TextStyle {
                 font: PROFONT.to_string(),
-                point_size: 11,
+                point_size: 8,
                 fg: Color::try_from(WHITE)?,
                 bg: Some(Color::try_from(BLACK)?),
                 padding: (2.0, 2.0),

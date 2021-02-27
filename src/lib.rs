@@ -26,7 +26,7 @@ macro_rules! layout {
 
 pub const DEBUG_ENV_VAR: &str = "PENROSE_DEBUG";
 
-pub const PROFONT: &str = "ProFont For Powerline";
+pub const PROFONT: &str = "ProFontIIx Nerd Font";
 pub const HEIGHT: usize = 18;
 
 pub const BLACK: &str = "#282828";
