@@ -34,7 +34,7 @@ pkill xautolock; xautolock \
 pkill volumeicon; volumeicon &
 pkill dunst; dunst &
 pkill blueman-applet; blueman-applet &
-pkill xfce4-power-manager; xfce4-power-manager &
+pkill xfce4-power-man; xfce4-power-manager &  # for some reason, this ends up running as xcfe4-power-man
 pkill gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
 
 "$HOME/.fehbg"
