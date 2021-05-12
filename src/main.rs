@@ -35,8 +35,8 @@ use tracing_subscriber::{self, filter::EnvFilter, prelude::*};
 use penrose_sminez::{
     actions::{k_open, power_menu, redetect_monitors},
     hooks::CenterFloat,
-    Conn, Wm, BLACK, BLUE, BROWSER, FLOAT_CLASS, FOLLOW_FOCUS_CONF, GREY, HEIGHT, MON_1, MON_2,
-    PROFONT, QT_CONSOLE, TERMINAL, WHITE,
+    Conn, Wm, BLACK, BLUE, BROWSER, FLOAT_CLASS, FOLLOW_FOCUS_CONF, FONT, GREY, HEIGHT, MON_1,
+    MON_2, QT_CONSOLE, TERMINAL, WHITE,
 };
 
 use std::convert::TryFrom;
@@ -113,7 +113,7 @@ fn main() -> Result<()> {
             XcbDraw::new()?,
             HEIGHT,
             &TextStyle {
-                font: PROFONT.to_string(),
+                font: FONT.to_string(),
                 point_size: 8,
                 fg: Color::try_from(WHITE)?,
                 bg: Some(Color::try_from(BLACK)?),

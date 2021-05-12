@@ -26,7 +26,8 @@ macro_rules! layout {
 
 pub const DEBUG_ENV_VAR: &str = "PENROSE_DEBUG";
 
-pub const PROFONT: &str = "ProFontIIx Nerd Font";
+pub const FONT: &str = "ProFontIIx Nerd Font";
+// pub const FONT: &str = "FiraCode Nerd Font";
 pub const HEIGHT: usize = 18;
 
 pub const BLACK: &str = "#282828";
