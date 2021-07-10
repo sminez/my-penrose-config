@@ -3,7 +3,7 @@ use penrose::{
     core::{bindings::KeyEventHandler, data_types::RelativePosition},
 };
 
-use std::thread;
+// use std::thread;
 
 use crate::{Conn, Wm, MON_1, MON_2};
 
@@ -16,8 +16,8 @@ pub fn power_menu() -> KeyEventHandler<Conn> {
 
         if let Ok(MenuMatch::Line(_, choice)) = menu.run(screen_index) {
             match choice.as_ref() {
-                "lock" => spawn!("xautolock -locknow"),
-                "logout" => spawn!("pkill x"),
+                "lock" => spawn!("dm-tool switch-to-greeter"),
+                "logout" => spawn!("pkill -fi penrose"),
                 "shutdown" => spawn!("sudo shutdown -h now"),
                 "reboot" => spawn!("sudo reboot"),
                 "restart-wm" => wm.exit(),
@@ -37,7 +37,7 @@ pub fn redetect_monitors() -> KeyEventHandler<Conn> {
 // Run k to view snippets and open a url if one is available
 pub fn k_open(float_class: &'static str) -> KeyEventHandler<Conn> {
     Box::new(move |_: &mut Wm| {
-        thread::spawn(move || spawn!("/usr/local/scripts/k-penrose.sh", float_class));
-        Ok(())
+        // thread::spawn(move || spawn!("/usr/local/scripts/k-penrose.sh", float_class));
+        spawn!("/usr/local/scripts/k-penrose.sh", float_class)
     })
 }

@@ -20,7 +20,7 @@ use penrose::{
         bindings::{KeyEventHandler, MouseEvent},
         config::Config,
         data_types::RelativePosition,
-        helpers::{index_selectors, spawn},
+        helpers::index_selectors,
         hooks::Hooks,
         layout::{bottom_stack, monocle, side_stack, Layout, LayoutConf},
         ring::Selector,
@@ -34,7 +34,7 @@ use tracing_subscriber::{self, filter::EnvFilter, prelude::*};
 
 use penrose_sminez::{
     actions::{k_open, power_menu, redetect_monitors},
-    hooks::CenterFloat,
+    hooks::{CenterFloat, StartupScript},
     Conn, Wm, BLACK, BLUE, BROWSER, FLOAT_CLASS, FOLLOW_FOCUS_CONF, FONT, GREY, HEIGHT, MON_1,
     MON_2, QT_CONSOLE, TERMINAL, WHITE,
 };
@@ -104,25 +104,30 @@ fn main() -> Result<()> {
         .unwrap();
 
     let sp = Scratchpad::new(TERMINAL, 0.8, 0.8);
+
+    let bar = dwm_bar(
+        XcbDraw::new()?,
+        HEIGHT,
+        &TextStyle {
+            font: FONT.to_string(),
+            point_size: 8,
+            fg: Color::try_from(WHITE)?,
+            bg: Some(Color::try_from(BLACK)?),
+            padding: (2.0, 2.0),
+        },
+        Color::try_from(BLUE)?, // highlight
+        Color::try_from(GREY)?, // empty_ws
+        config.workspaces().clone(),
+    )?;
+    // bar.widgets.push(Box::new(StaloneTray::new(18, 0x282828)?));
+
     let hooks: Hooks<Conn> = vec![
         ManageExistingClients::new(),
         AutoSetMonitorsViaXrandr::new(MON_1, MON_2, RelativePosition::Right),
         CenterFloat::new(FLOAT_CLASS, 0.9),
         sp.get_hook(),
-        Box::new(dwm_bar(
-            XcbDraw::new()?,
-            HEIGHT,
-            &TextStyle {
-                font: FONT.to_string(),
-                point_size: 8,
-                fg: Color::try_from(WHITE)?,
-                bg: Some(Color::try_from(BLACK)?),
-                padding: (2.0, 2.0),
-            },
-            Color::try_from(BLUE)?, // highlight
-            Color::try_from(GREY)?, // empty_ws
-            config.workspaces().clone(),
-        )?),
+        Box::new(bar),
+        Box::new(StartupScript::new("/usr/local/scripts/penrose-startup.sh")),
     ];
 
     let key_bindings = gen_keybindings! {
@@ -134,7 +139,7 @@ fn main() -> Result<()> {
 
         // actions
         "M-A-s" => run_external!("screenshot");
-        "M-A-l" => run_external!("lock-screen");
+        "M-A-l" => run_external!("dm-tool switch-to-greeter");
         "M-A-m" => redetect_monitors();
         "M-A-t" => set_trace_filter;
         "M-A-Escape" => power_menu();
@@ -181,8 +186,5 @@ fn main() -> Result<()> {
     };
 
     let mut wm = new_xcb_backed_window_manager(config, hooks, logging_error_handler())?;
-
-    spawn("/usr/local/scripts/penrose-startup.sh")?;
-
     wm.grab_keys_and_run(key_bindings, mouse_bindings)
 }
