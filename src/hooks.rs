@@ -1,6 +1,5 @@
 use penrose::{
     core::{
-        client::Client,
         data_types::Region,
         hooks::Hook,
         manager::WindowManager,
@@ -48,10 +47,12 @@ impl CenterFloat {
 }
 
 impl<X: XConn> Hook<X> for CenterFloat {
-    fn new_client(&mut self, wm: &mut WindowManager<X>, c: &mut Client) -> Result<()> {
-        if c.wm_class() == self.class_name {
-            c.set_floating(true);
-            self.centered_above(c.id(), wm)?;
+    fn new_client(&mut self, wm: &mut WindowManager<X>, id: u32) -> Result<()> {
+        if let Some(c) = wm.client_mut(&id.into()) {
+            if c.wm_class() == self.class_name {
+                c.set_floating(true);
+                self.centered_above(c.id(), wm)?;
+            }
         }
 
         Ok(())
@@ -93,9 +94,9 @@ where
         spawn!(&self.cmd)
     }
 
-    fn new_client(&mut self, _: &mut WindowManager<X>, client: &mut Client) -> Result<()> {
-        if client.wm_name() == "stalonetray" {
-            self.id = Some(client.id());
+    fn new_client(&mut self, wm: &mut WindowManager<X>, id: u32) -> Result<()> {
+        if wm.client(&id.into()).map(|c| c.wm_name()) == Some("stalonetray") {
+            self.id = Some(id);
         }
 
         Ok(())

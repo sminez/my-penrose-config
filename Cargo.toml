@@ -2,7 +2,7 @@
 name = "penrose-sminez"
 version = "0.1.0"
 authors = ["IDAM <innes.andersonmorrison@gmail.com>"]
-edition = "2018"
+edition = "2021"
 
 [[bin]]
 doc = false

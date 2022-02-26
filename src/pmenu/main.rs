@@ -9,6 +9,7 @@ use penrose::{core::helpers::spawn, xcb::XcbDraw, PenroseError, Result};
 use penrose_menu::*;
 
 use std::{
+    collections::HashSet,
     env,
     io::{self, Read},
 };
@@ -51,20 +52,23 @@ enum SubCommand {
 
 pub fn find_executables() -> Result<Vec<String>> {
     let paths = env::var_os("PATH").ok_or(PenroseError::Raw("$PATH not set".into()))?;
-    let mut executables = Vec::new();
+    let mut deduped = HashSet::new();
 
     for dir in env::split_paths(&paths) {
-        for res in dir.read_dir()? {
-            let entry = res?;
-            let meta = entry.metadata()?;
-            if meta.is_file() {
-                if let Some(exe) = entry.file_name().to_str().map(String::from) {
-                    executables.push(exe)
+        if let Ok(contents) = dir.read_dir() {
+            for res in contents {
+                let entry = res?;
+                let meta = entry.metadata()?;
+                if meta.is_file() {
+                    if let Some(exe) = entry.file_name().to_str().map(String::from) {
+                        deduped.insert(exe);
+                    }
                 }
             }
         }
     }
 
+    let mut executables: Vec<String> = deduped.into_iter().collect();
     executables.sort();
     Ok(executables)
 }
