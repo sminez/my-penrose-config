@@ -4,10 +4,10 @@ My Penrose Config
 
 penrose: [![Build](https://github.com/sminez/penrose/workflows/Build/badge.svg?branch=master)](https://github.com/sminez/penrose/actions?query=workflow%3ABuild) [![crates.io version](https://img.shields.io/crates/v/penrose)](https://crates.io/crates/penrose)
 
-This is my personal config for the penrose tiling WM library.
-It relies heavily on a number of custom scripts and external programs, in
+This is my personal set up for the penrose tiling WM library that I write.
+It relies on a number of custom scripts and external programs (in the repo), in
 addition to being heavily customised for my day to day workflow. You probably
-don't want to use everything that is here but you may find some things of
+don't want to use _everything_ that is here but you may find some things of
 interest that you want for your own config.
 
 

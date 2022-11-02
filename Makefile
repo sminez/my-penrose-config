@@ -14,7 +14,6 @@ install:
 	@echo ":: Installing binaries..."
 	@mkdir -p /usr/local/bin
 	@cp -f target/release/penrose /usr/local/bin
-	@cp -f target/release/pmenu /usr/local/bin
 	@cp -f bin/lock-screen /usr/local/bin
 	@cp -f bin/p_log /usr/local/bin
 	@cp -f bin/rofi-apps /usr/local/bin
