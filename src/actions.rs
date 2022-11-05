@@ -1,6 +1,6 @@
 use crate::KeyHandler;
 use penrose::{
-    core::actions::key_handler,
+    builtin::actions::key_handler,
     custom_error,
     extensions::util::dmenu::{DMenu, DMenuConfig, MenuMatch},
     util::spawn,

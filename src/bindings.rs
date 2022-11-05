@@ -4,11 +4,10 @@ use penrose::{
     builtin::{
         actions::{
             floating::{float_focused, reposition, resize, sink_all, sink_focused},
-            log_current_state,
+            log_current_state, modify_with, send_layout_message, spawn,
         },
         layout::messages::{ExpandMain, IncMain, ShrinkMain},
     },
-    core::actions::{modify_with, send_layout_message, spawn},
     extensions::hooks::ToggleNamedScratchPad,
     map,
 };
