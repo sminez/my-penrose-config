@@ -2,7 +2,10 @@ use crate::{BAR_HEIGHT_PX, BLACK, BLUE, FONT, GREY, MAX_ACTIVE_WINDOW_CHARS, WHI
 use penrose::{x::XConn, Color};
 use penrose_ui::{
     bar::{
-        widgets::{ActiveWindowName, CurrentLayout, RootWindowName, Workspaces},
+        widgets::{
+            amixer_volume, battery_summary, current_date_and_time, wifi_network, ActiveWindowName,
+            CurrentLayout, Workspaces,
+        },
         Position, StatusBar,
     },
     core::TextStyle,
@@ -20,6 +23,11 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
         fg: WHITE.into(),
         bg: Some(BLACK.into()),
         padding: (2.0, 2.0),
+    };
+
+    let padded_style = TextStyle {
+        padding: (4.0, 2.0),
+        ..style.clone()
     };
 
     StatusBar::try_new(
@@ -41,14 +49,11 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
                 true,
                 false,
             )),
-            Box::new(RootWindowName::new(
-                &TextStyle {
-                    padding: (4.0, 2.0),
-                    ..style.clone()
-                },
-                false,
-                true,
-            )),
+            Box::new(wifi_network(&padded_style)),
+            Box::new(battery_summary("BAT1", &padded_style)),
+            Box::new(battery_summary("BAT0", &padded_style)),
+            Box::new(amixer_volume("Master", &padded_style)),
+            Box::new(current_date_and_time(&padded_style)),
         ],
     )
 }

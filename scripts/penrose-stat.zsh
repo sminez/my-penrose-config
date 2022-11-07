@@ -51,12 +51,8 @@ function get_volume {
   (( vol > 0 )) && echo -n " $vol%" || echo -n " ❌"
 }
 
-function get_keyboard_layout {
-  echo -n "[$(setxkbmap -verbose 10 | awk -F':' '/layout/ { print $2 }' | xargs)]"
-}
-
 function get_status {
-  echo -n "$(get_wifi) $(get_battery) $(get_volume) $(get_keyboard_layout) $(date '+%F %R')"
+  echo -n "$(get_wifi) $(get_battery) $(get_volume) $(date '+%F %R')"
 }
 
 # == main loop ==

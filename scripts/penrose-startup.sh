@@ -7,7 +7,6 @@
 # Make sure we only run once
 pid=$$
 pgrep -fi penrose-startup.sh | grep -v "^$pid$" | xargs -I{} kill {}
-pkill -fi penrose-stat.zsh
 
 # Set screen resolutions (add additional screens here)
 xrandr --output HDMI-2 --auto --right-of eDP-1 &
@@ -38,7 +37,6 @@ pkill -fi xfce4-power-man; xfce4-power-manager &  # for some reason, this ends u
 pkill -fi gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
 
 "$HOME/.fehbg"
-/usr/local/scripts/penrose-stat.zsh &
 
 # see /usr/local/bin/run-penrose
 [[ -z "$RESTARTED" ]]; /usr/local/scripts/unlock-ssh.sh &
