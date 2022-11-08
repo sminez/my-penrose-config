@@ -19,7 +19,6 @@ install:
 	@cp -f bin/rofi-apps /usr/local/bin
 	@cp -f bin/run-penrose /usr/local/bin
 	@chmod 755 /usr/local/bin/penrose
-	@chmod 755 /usr/local/bin/pmenu
 	@chmod 755 /usr/local/bin/lock-screen
 	@chmod 755 /usr/local/bin/p_log
 	@chmod 755 /usr/local/bin/rofi-apps
