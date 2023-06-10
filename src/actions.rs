@@ -13,10 +13,10 @@ use tracing_subscriber::{reload::Handle, EnvFilter};
 pub fn power_menu() -> KeyHandler {
     key_handler(|state, _| {
         let options = vec!["lock", "logout", "restart-wm", "shutdown", "reboot"];
-        let menu = DMenu::new(">>> ", options, DMenuConfig::default());
         let screen_index = state.client_set.current_screen().index();
+        let menu = DMenu::new(&DMenuConfig::with_prompt(">>> "), screen_index);
 
-        if let Ok(MenuMatch::Line(_, choice)) = menu.run(screen_index) {
+        if let Ok(MenuMatch::Line(_, choice)) = menu.build_menu(options) {
             match choice.as_ref() {
                 "lock" => spawn("xflock4"),
                 "logout" => spawn("pkill -fi penrose"),
@@ -43,10 +43,10 @@ where
 {
     key_handler(move |state, _| {
         let options = vec!["show_docs", "trace", "debug", "info"];
-        let menu = DMenu::new("filter: ", options, DMenuConfig::default());
         let screen_index = state.client_set.current_screen().index();
+        let menu = DMenu::new(&DMenuConfig::with_prompt("filter: "), screen_index);
 
-        let new_filter = match menu.run(screen_index)? {
+        let new_filter = match menu.build_menu(options)? {
             MenuMatch::Line(_, selection) if &selection == "show docs" => {
                 return spawn(format!("qutebrowser {}", TRACING_DOC_URL));
             }
