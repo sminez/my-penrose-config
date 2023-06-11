@@ -20,6 +20,7 @@ const DELTA: i32 = 10;
 // Generate a raw key binding map in terms of parsable string key bindings rather than resolved key codes
 pub fn raw_key_bindings<L, S>(
     toggle_scratch: ToggleNamedScratchPad,
+    toggle_scratch_py: ToggleNamedScratchPad,
     handle: Handle<L, S>,
 ) -> HashMap<String, KeyHandler>
 where
@@ -56,6 +57,7 @@ where
         "M-semicolon" => spawn("rofi-apps"),
         "M-Return" => spawn("st"),
         "M-slash" => Box::new(toggle_scratch),
+        "M-p" => Box::new(toggle_scratch_py),
 
         // Session management
         "M-A-l" => spawn("xflock4"),

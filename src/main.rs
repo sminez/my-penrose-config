@@ -48,14 +48,22 @@ fn main() -> anyhow::Result<()> {
         true,
     );
 
+    let (nsp_py, toggle_scratch_py) = NamedScratchPad::new(
+        "qt-console",
+        "jupyter-qtconsole",
+        ClassName("jupyter-qtconsole"),
+        FloatingCentered::new(0.8, 0.8),
+        true,
+    );
+
     let conn = RustConn::new()?;
-    let raw_bindings = raw_key_bindings(toggle_scratch, reload_handle);
+    let raw_bindings = raw_key_bindings(toggle_scratch, toggle_scratch_py, reload_handle);
     let key_bindings = parse_keybindings_with_xmodmap(raw_bindings)?;
 
     // Initialise the required state extension and hooks for handling the named scratchpad
     let wm = add_named_scratchpads(
         WindowManager::new(config, key_bindings, HashMap::new(), conn)?,
-        vec![nsp],
+        vec![nsp, nsp_py],
     );
 
     let bar = status_bar()?;
