@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# open a new window showing the current webcam output using mpv.
+# tagged with the "mpv-float" WM_CLASS for picking up as auto-floating
+# in the window manager
+mpv \
+  --no-osc \
+  --no-input-default-bindings \
+  --input-conf=/dev/null \
+  --autofit=20% \
+  --title="mpv-float" \
+  --x11-name="mpv-float" \
+  --profile=low-latency \
+  --untimed /dev/video0 \
+  --ontop

@@ -56,6 +56,7 @@ where
         "M-A-s" => spawn("screenshot"),
         "M-semicolon" => spawn("rofi-apps"),
         "M-Return" => spawn("st"),
+        "M-A-w" => spawn("floating-webcam"),
         "M-slash" => Box::new(toggle_scratch),
         "M-p" => Box::new(toggle_scratch_py),
 
@@ -80,7 +81,7 @@ where
 
         // Debugging
         "M-A-t" => set_tracing_filter(handle),
-        "M-S-s" => log_current_state(),
+        "M-A-s" => log_current_state(),
     };
 
     for tag in &["1", "2", "3", "4", "5", "6", "7", "8", "9"] {

@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+#----------
+# Grab a screenshot after waiting $1 seconds (default to 1)
+sleep "${1:-1}"
+mkdir -p $HOME/Pictures/screenshots
+cd $HOME/Pictures/screenshots
+scrot '%Y-%m-%d_%s.png'

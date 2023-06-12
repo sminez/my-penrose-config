@@ -1,11 +1,12 @@
 //! My personal penrose config
 use penrose::{
-    core::{bindings::parse_keybindings_with_xmodmap, Config, WindowManager},
+    core::{bindings::parse_keybindings_with_xmodmap, hooks::ManageHook, Config, WindowManager},
     extensions::hooks::{
-        add_ewmh_hooks, add_named_scratchpads, manage::FloatingCentered, NamedScratchPad,
-        SpawnOnStartup,
+        add_ewmh_hooks, add_named_scratchpads,
+        manage::{FloatingCentered, FloatingRelative, SetWorkspace},
+        NamedScratchPad, SpawnOnStartup,
     },
-    x::query::ClassName,
+    x::query::{AppName, ClassName},
     x11rb::RustConn,
 };
 use penrose_sminez::{bar::status_bar, bindings::raw_key_bindings, layouts::layouts};
@@ -19,8 +20,8 @@ fn main() -> anyhow::Result<()> {
     // _really_ seems to show that Handle only has a single type param, but when I try it in here
     // it complains about needing a second (phantom data) param as well?
     let tracing_builder = tracing_subscriber::fmt()
-        .json() // JSON logs
-        .flatten_event(true)
+        // .json() // JSON logs
+        // .flatten_event(true)
         .with_env_filter("info")
         .with_filter_reloading();
 
@@ -29,11 +30,18 @@ fn main() -> anyhow::Result<()> {
 
     // Run my init script on startup
     let startup_hook = SpawnOnStartup::boxed("/usr/local/scripts/penrose-startup.sh");
-    // Float st-terminal windows spawned as fzf helpers from kakoune
-    let manage_hook = (ClassName("floatTerm"), FloatingCentered::new(0.8, 0.6));
+    // Float st-terminal windows spawned as fzf helpers from kakoune and my hacked up
+    // webcam player using mpv
+    let manage_hook = (ClassName("floatTerm"), FloatingCentered::new(0.8, 0.6))
+        .then((ClassName("discord"), SetWorkspace("9")))
+        .then((
+            AppName("mpv-float"),
+            FloatingRelative::new(0.8, 0.76, 0.2, 0.24),
+        ));
 
     let config = add_ewmh_hooks(Config {
         default_layouts: layouts(),
+        floating_classes: vec!["mpv-float".to_owned()],
         manage_hook: Some(Box::new(manage_hook)),
         startup_hook: Some(startup_hook),
         ..Config::default()
