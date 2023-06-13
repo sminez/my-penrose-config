@@ -9,7 +9,9 @@ use penrose::{
     x::query::{AppName, ClassName},
     x11rb::RustConn,
 };
-use penrose_sminez::{bar::status_bar, bindings::raw_key_bindings, layouts::layouts};
+use penrose_sminez::{
+    actions::add_sticky_client_state, bar::status_bar, bindings::raw_key_bindings, layouts::layouts,
+};
 use std::collections::HashMap;
 use tracing_subscriber::{self, prelude::*};
 
@@ -69,10 +71,10 @@ fn main() -> anyhow::Result<()> {
     let key_bindings = parse_keybindings_with_xmodmap(raw_bindings)?;
 
     // Initialise the required state extension and hooks for handling the named scratchpad
-    let wm = add_named_scratchpads(
+    let wm = add_sticky_client_state(add_named_scratchpads(
         WindowManager::new(config, key_bindings, HashMap::new(), conn)?,
         vec![nsp, nsp_py],
-    );
+    ));
 
     let bar = status_bar()?;
     let wm = bar.add_to(wm);

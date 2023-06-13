@@ -1,4 +1,4 @@
-use crate::actions::{power_menu, set_tracing_filter};
+use crate::actions::{power_menu, set_tracing_filter, toggle_sticky_client};
 use crate::KeyHandler;
 use penrose::{
     builtin::{
@@ -64,6 +64,8 @@ where
         "M-A-l" => spawn("xflock4"),
         "M-A-Escape" => power_menu(),
 
+        "M-C-t" => toggle_sticky_client(),
+
         // Floating management
         "M-C-f" => float_focused(),
         "M-C-s" => sink_focused(),
@@ -81,7 +83,7 @@ where
 
         // Debugging
         "M-A-t" => set_tracing_filter(handle),
-        "M-A-s" => log_current_state(),
+        "M-A-d" => log_current_state(),
     };
 
     for tag in &["1", "2", "3", "4", "5", "6", "7", "8", "9"] {

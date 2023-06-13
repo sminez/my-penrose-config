@@ -1,9 +1,13 @@
 use crate::KeyHandler;
 use penrose::{
     builtin::actions::key_handler,
+    core::{State, WindowManager},
     custom_error,
     extensions::util::dmenu::{DMenu, DMenuConfig, MenuMatch},
     util::spawn,
+    x::{XConn, XConnExt},
+    x11rb::RustConn,
+    Result, Xid,
 };
 use std::process::exit;
 use tracing::warn;
@@ -69,4 +73,49 @@ where
 // Run k to view snippets and open a url if one is available
 pub fn k_open(float_class: &'static str) -> KeyHandler {
     key_handler(move |_, _| spawn(format!("/usr/local/scripts/k-penrose.sh {float_class}")))
+}
+
+struct StickyClientState(Vec<Xid>);
+
+pub fn add_sticky_client_state<X>(mut wm: WindowManager<X>) -> WindowManager<X>
+where
+    X: XConn + 'static,
+{
+    wm.state.add_extension(StickyClientState(Vec::new()));
+    wm.state.config.compose_or_set_refresh_hook(refresh_hook);
+
+    wm
+}
+
+fn refresh_hook<X: XConn>(state: &mut State<X>, _x: &X) -> Result<()> {
+    let s = state.extension::<StickyClientState>()?;
+    let t = state.client_set.current_tag().to_string();
+
+    for client in s.borrow().0.iter() {
+        if state.client_set.tag_for_client(client) != Some(&t) {
+            state.client_set.move_client_to_tag(client, &t);
+        }
+    }
+
+    Ok(())
+}
+
+pub fn toggle_sticky_client() -> KeyHandler {
+    key_handler(|state, x: &RustConn| {
+        let _s = state.extension::<StickyClientState>()?;
+        let mut s = _s.borrow_mut();
+
+        if let Some(&id) = state.client_set.current_client() {
+            if s.0.contains(&id) {
+                s.0.retain(|&elem| elem != id);
+            } else {
+                s.0.push(id);
+            }
+
+            drop(s);
+            x.refresh(state)?;
+        }
+
+        Ok(())
+    })
 }
