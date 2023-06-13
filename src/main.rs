@@ -36,7 +36,7 @@ fn main() -> anyhow::Result<()> {
         .then((ClassName("discord"), SetWorkspace("9")))
         .then((
             AppName("mpv-float"),
-            FloatingRelative::new(0.8, 0.76, 0.2, 0.24),
+            FloatingRelative::new(0.8, 0.0, 0.2, 0.24),
         ));
 
     let config = add_ewmh_hooks(Config {
