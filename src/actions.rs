@@ -87,14 +87,26 @@ where
     wm
 }
 
-fn refresh_hook<X: XConn>(state: &mut State<X>, _x: &X) -> Result<()> {
+fn refresh_hook<X: XConn>(state: &mut State<X>, x: &X) -> Result<()> {
     let s = state.extension::<StickyClientState>()?;
     let t = state.client_set.current_tag().to_string();
+    let mut need_refresh = false;
+
+    // clear out any clients we were tracking that are no longer in state
+    s.borrow_mut().0.retain(|id| state.client_set.contains(id));
 
     for client in s.borrow().0.iter() {
         if state.client_set.tag_for_client(client) != Some(&t) {
             state.client_set.move_client_to_tag(client, &t);
+            need_refresh = true;
         }
+    }
+
+    // we guard against refreshing only when clients were on the wrong screen
+    // so that we don't get into an infinite loop from calling refresh from
+    // inside of a refresh hook
+    if need_refresh {
+        x.refresh(state)?;
     }
 
     Ok(())
