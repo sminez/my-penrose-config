@@ -1,16 +1,18 @@
 //! My personal penrose config
 use penrose::{
+    builtin::hooks::SpacingHook,
     core::{bindings::parse_keybindings_with_xmodmap, hooks::ManageHook, Config, WindowManager},
     extensions::hooks::{
         add_ewmh_hooks, add_named_scratchpads,
-        manage::{FloatingCentered, FloatingRelative, SetWorkspace},
+        manage::{FloatingCentered, SetWorkspace},
         NamedScratchPad, SpawnOnStartup,
     },
-    x::query::{AppName, ClassName},
+    x::query::ClassName,
     x11rb::RustConn,
 };
 use penrose_sminez::{
-    actions::add_sticky_client_state, bar::status_bar, bindings::raw_key_bindings, layouts::layouts,
+    actions::add_sticky_client_state, bar::status_bar, bindings::raw_key_bindings,
+    layouts::layouts, BAR_HEIGHT_PX, INNER_PX, OUTER_PX,
 };
 use std::collections::HashMap;
 use tracing_subscriber::{self, prelude::*};
@@ -32,20 +34,22 @@ fn main() -> anyhow::Result<()> {
 
     // Run my init script on startup
     let startup_hook = SpawnOnStartup::boxed("/usr/local/scripts/penrose-startup.sh");
-    // Float st-terminal windows spawned as fzf helpers from kakoune and my hacked up
-    // webcam player using mpv
+    // Float st-terminal windows spawned as fzf helpers from kakoune
     let manage_hook = (ClassName("floatTerm"), FloatingCentered::new(0.8, 0.6))
-        .then((ClassName("discord"), SetWorkspace("9")))
-        .then((
-            AppName("mpv-float"),
-            FloatingRelative::new(0.8, 0.0, 0.2, 0.24),
-        ));
+        .then((ClassName("discord"), SetWorkspace("9")));
+    let layout_hook = SpacingHook {
+        inner_px: INNER_PX,
+        outer_px: OUTER_PX,
+        top_px: BAR_HEIGHT_PX,
+        bottom_px: 0,
+    };
 
     let config = add_ewmh_hooks(Config {
         default_layouts: layouts(),
         floating_classes: vec!["mpv-float".to_owned()],
         manage_hook: Some(Box::new(manage_hook)),
         startup_hook: Some(startup_hook),
+        layout_hook: Some(Box::new(layout_hook)),
         ..Config::default()
     });
 
