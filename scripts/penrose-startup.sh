@@ -17,7 +17,7 @@ xinput --set-prop "11" "libinput Tapping Enabled" 1
 xinput --set-prop "12" "libinput Accel Speed" 0.0
 
 # Keyboard overrides
-setxkbmap -option caps:ctrl_modifier
+setxkbmap -option caps:super
 xsetroot -cursor_name left_ptr
 
 # pkill -fi stalonetray; stalonetray -bg '#282828' --icon-size 18 &
@@ -34,6 +34,7 @@ pkill -fi volumeicon; volumeicon &
 pkill -fi dunst; dunst &
 pkill -fi blueman-applet; blueman-applet &
 pkill -fi xfce4-power-man; xfce4-power-manager &  # for some reason, this ends up running as xcfe4-power-man
+pkill -fi xfce4-screensaver; xfce4-screensaver &
 pkill -fi gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
 
 "$HOME/.fehbg"
