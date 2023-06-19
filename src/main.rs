@@ -1,12 +1,13 @@
 //! My personal penrose config
 use penrose::{
     builtin::hooks::SpacingHook,
-    core::{bindings::parse_keybindings_with_xmodmap, hooks::ManageHook, Config, WindowManager},
+    core::{bindings::parse_keybindings_with_xmodmap, Config, WindowManager},
     extensions::hooks::{
         add_ewmh_hooks, add_named_scratchpads,
         manage::{FloatingCentered, SetWorkspace},
         NamedScratchPad, SpawnOnStartup,
     },
+    manage_hooks,
     x::query::ClassName,
     x11rb::RustConn,
 };
@@ -32,11 +33,11 @@ fn main() -> anyhow::Result<()> {
     let reload_handle = tracing_builder.reload_handle();
     tracing_builder.finish().init();
 
-    // Run my init script on startup
     let startup_hook = SpawnOnStartup::boxed("/usr/local/scripts/penrose-startup.sh");
-    // Float st-terminal windows spawned as fzf helpers from kakoune
-    let manage_hook = (ClassName("floatTerm"), FloatingCentered::new(0.8, 0.6))
-        .then((ClassName("discord"), SetWorkspace("9")));
+    let manage_hook = manage_hooks![
+        ClassName("floatTerm") => FloatingCentered::new(0.8, 0.6),
+        ClassName("discord")  => SetWorkspace("9"),
+    ];
     let layout_hook = SpacingHook {
         inner_px: INNER_PX,
         outer_px: OUTER_PX,
@@ -47,7 +48,7 @@ fn main() -> anyhow::Result<()> {
     let config = add_ewmh_hooks(Config {
         default_layouts: layouts(),
         floating_classes: vec!["mpv-float".to_owned()],
-        manage_hook: Some(Box::new(manage_hook)),
+        manage_hook: Some(manage_hook),
         startup_hook: Some(startup_hook),
         layout_hook: Some(Box::new(layout_hook)),
         ..Config::default()
