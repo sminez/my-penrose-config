@@ -57,8 +57,8 @@ fn main() -> anyhow::Result<()> {
     // Create a new named scratchpad and toggle handle for use in keybindings.
     let (nsp, toggle_scratch) = NamedScratchPad::new(
         "terminal",
-        "st -c StScratchpad",
-        ClassName("StScratchpad"),
+        "kitty --class KittyScratchpad",
+        ClassName("KittyScratchpad"),
         FloatingCentered::new(0.8, 0.8),
         true,
     );
