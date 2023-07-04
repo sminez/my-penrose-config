@@ -55,7 +55,7 @@ where
         // Launchers
         "M-A-s" => spawn("screenshot"),
         "M-semicolon" => spawn("rofi-apps"),
-        "M-Return" => spawn("kitty"),
+        "M-Return" => spawn("st"),
         "M-A-w" => spawn("floating-webcam"),
         "M-slash" => Box::new(toggle_scratch),
         "M-p" => Box::new(toggle_scratch_py),
