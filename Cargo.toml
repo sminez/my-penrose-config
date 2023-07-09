@@ -9,18 +9,13 @@ doc = false
 name = "penrose"
 path = "src/main.rs"
 
-[[bin]]
-doc = false
-name = "pctl"
-path = "src/pctl.rs"
-
 [dependencies]
-anyhow = "1.0.66"
-clap = { version = "4.0.18", features = ["derive", "unicode"] }
+anyhow = "1.0.71"
+clap = { version = "4.3.11", features = ["derive", "unicode"] }
 penrose = { path = "/home/innes/repos/personal/penrose" }
 penrose_ui = { path = "/home/innes/repos/personal/penrose/crates/penrose_ui" }
 tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.16", features = ["env-filter", "json"] }
+tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
 
 [profile.release]
 strip = true
