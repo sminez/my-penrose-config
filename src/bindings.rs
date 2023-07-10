@@ -35,6 +35,8 @@ where
         "M-k" => modify_with(|cs| cs.focus_up()),
         "M-S-j" => modify_with(|cs| cs.swap_down()),
         "M-S-k" => modify_with(|cs| cs.swap_up()),
+        "M-space" => modify_with(|cs| cs.swap_focus_and_head()),
+        "M-C-space" => modify_with(|cs| cs.rotate_focus_to_head()),
         "M-S-q" => modify_with(|cs| cs.kill_focused()),
 
         // Workspaces
@@ -47,10 +49,10 @@ where
         // Layouts
         "M-grave" => modify_with(|cs| cs.next_layout()),
         "M-S-grave" => modify_with(|cs| cs.previous_layout()),
-        "M-Up" => send_layout_message(|| IncMain(1)),
-        "M-Down" => send_layout_message(|| IncMain(-1)),
-        "M-Right" => send_layout_message(|| ExpandMain),
-        "M-Left" => send_layout_message(|| ShrinkMain),
+        "M-S-Up" => send_layout_message(|| IncMain(1)),
+        "M-S-Down" => send_layout_message(|| IncMain(-1)),
+        "M-S-Right" => send_layout_message(|| ExpandMain),
+        "M-S-Left" => send_layout_message(|| ShrinkMain),
 
         // Launchers
         "M-A-s" => spawn("screenshot"),
