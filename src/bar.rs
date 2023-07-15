@@ -18,42 +18,41 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
     let empty_ws: Color = GREY.into();
 
     let style = TextStyle {
-        font: FONT.to_string(),
-        point_size: 8,
         fg: WHITE.into(),
         bg: Some(BLACK.into()),
-        padding: (2.0, 2.0),
+        padding: (2, 2),
     };
 
     let padded_style = TextStyle {
-        padding: (4.0, 2.0),
-        ..style.clone()
+        padding: (4, 2),
+        ..style
     };
 
     StatusBar::try_new(
         Position::Top,
         BAR_HEIGHT_PX,
         style.bg.unwrap_or_else(|| 0x000000.into()),
-        &[&style.font],
+        FONT,
+        8,
         vec![
-            Box::new(Workspaces::new(&style, highlight, empty_ws)),
-            Box::new(CurrentLayout::new(&style)),
+            Box::new(Workspaces::new(style, highlight, empty_ws)),
+            Box::new(CurrentLayout::new(style)),
             // Box::new(penrose_bar::widgets::debug::StateSummary::new(style)),
             Box::new(ActiveWindowName::new(
                 MAX_ACTIVE_WINDOW_CHARS,
-                &TextStyle {
+                TextStyle {
                     bg: Some(highlight),
-                    padding: (6.0, 4.0),
-                    ..style.clone()
+                    padding: (6, 4),
+                    ..style
                 },
                 true,
                 false,
             )),
-            Box::new(wifi_network(&padded_style)),
-            Box::new(battery_summary("BAT1", &padded_style)),
-            Box::new(battery_summary("BAT0", &padded_style)),
-            Box::new(amixer_volume("Master", &padded_style)),
-            Box::new(current_date_and_time(&padded_style)),
+            Box::new(wifi_network(padded_style)),
+            Box::new(battery_summary("BAT1", padded_style)),
+            Box::new(battery_summary("BAT0", padded_style)),
+            Box::new(amixer_volume("Master", padded_style)),
+            Box::new(current_date_and_time(padded_style)),
         ],
     )
 }

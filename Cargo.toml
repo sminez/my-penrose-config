@@ -11,7 +11,6 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1.0.71"
-clap = { version = "4.3.11", features = ["derive", "unicode"] }
 penrose = { path = "/home/innes/repos/personal/penrose" }
 penrose_ui = { path = "/home/innes/repos/personal/penrose/crates/penrose_ui" }
 tracing = "0.1.37"
