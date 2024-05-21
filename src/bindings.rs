@@ -58,12 +58,11 @@ where
         "M-A-s" => spawn("screenshot"),
         "M-semicolon" => spawn("rofi-apps"),
         "M-Return" => spawn("st"),
-        "M-A-w" => spawn("floating-webcam"),
         "M-slash" => Box::new(toggle_scratch),
         "M-p" => Box::new(toggle_scratch_py),
 
         // Session management
-        "M-A-l" => spawn("xflock4"),
+        "M-A-l" => spawn("lock-screen"),  // i3lock-fancy
         "M-A-Escape" => power_menu(),
 
         "M-C-t" => toggle_sticky_client(),

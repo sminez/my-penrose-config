@@ -1,4 +1,5 @@
 //! My personal penrose config
+use anyhow::Context;
 use penrose::{
     builtin::hooks::SpacingHook,
     core::{bindings::parse_keybindings_with_xmodmap, Config, WindowManager},
@@ -16,22 +17,20 @@ use penrose_sminez::{
     layouts::layouts, BAR_HEIGHT_PX, INNER_PX, OUTER_PX,
 };
 use std::collections::HashMap;
-use tracing_subscriber::{self, prelude::*};
+use tracing::subscriber::set_global_default;
+use tracing_subscriber::{layer::SubscriberExt, FmtSubscriber};
 
 fn main() -> anyhow::Result<()> {
-    // NOTE: Setting up tracing with dynamic filter updating inline as getting the type for
-    // the reload Handle to work is a massive pain... this really should be in its own method
-    // somewhere as the example here: https://github.com/tokio-rs/tracing/blob/master/examples/examples/tower-load.rs
-    // _really_ seems to show that Handle only has a single type param, but when I try it in here
-    // it complains about needing a second (phantom data) param as well?
-    let tracing_builder = tracing_subscriber::fmt()
-        // .json() // JSON logs
-        // .flatten_event(true)
+    let builder = FmtSubscriber::builder()
         .with_env_filter("info")
+        .with_writer(std::io::stdout)
         .with_filter_reloading();
 
-    let reload_handle = tracing_builder.reload_handle();
-    tracing_builder.finish().init();
+    let reload_handle = builder.reload_handle();
+    let journald_layer = tracing_journald::layer().context("unable to open journald socket")?;
+    let subscriber = builder.finish().with(journald_layer);
+
+    set_global_default(subscriber).context("unable to set a global tracing subscriber")?;
 
     let startup_hook = SpawnOnStartup::boxed("/usr/local/scripts/penrose-startup.sh");
     let manage_hook = manage_hooks![

@@ -33,7 +33,7 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
         BAR_HEIGHT_PX,
         style.bg.unwrap_or_else(|| 0x000000.into()),
         FONT,
-        8,
+        12,
         vec![
             Box::new(Workspaces::new(style, highlight, empty_ws)),
             Box::new(CurrentLayout::new(style)),
@@ -50,7 +50,6 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
             )),
             Box::new(wifi_network(padded_style)),
             Box::new(battery_summary("BAT1", padded_style)),
-            Box::new(battery_summary("BAT0", padded_style)),
             Box::new(amixer_volume("Master", padded_style)),
             Box::new(current_date_and_time(padded_style)),
         ],

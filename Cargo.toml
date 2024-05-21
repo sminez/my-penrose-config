@@ -14,6 +14,7 @@ anyhow = "1.0.71"
 penrose = { path = "/home/sminez/repos/personal/penrose" }
 penrose_ui = { path = "/home/sminez/repos/personal/penrose/crates/penrose_ui" }
 tracing = "0.1.37"
+tracing-journald = "0.3.0"
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
 
 [profile.release]

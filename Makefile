@@ -5,7 +5,7 @@ all: build
 
 .PHONY: build
 build:
-	$(shell [[ $EUID -eq 0 ]] && echo "build can not be run as root" && exit 1)
+	$(shell [ "$EUID" = "0" ] && echo "build can not be run as root" && exit 1)
 	@echo ":: Rebuilding in release mode..."
 	@cargo build --release
 
