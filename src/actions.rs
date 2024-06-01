@@ -22,7 +22,7 @@ pub fn power_menu() -> KeyHandler {
 
         if let Ok(MenuMatch::Line(_, choice)) = menu.build_menu(options) {
             match choice.as_ref() {
-                "lock" => spawn("xflock4"),
+                "lock" => spawn("gnome-screensaver-command --lock"),
                 "logout" => spawn("pkill -fi penrose"),
                 "shutdown" => spawn("sudo shutdown -h now"),
                 "reboot" => spawn("sudo reboot"),

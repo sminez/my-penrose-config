@@ -1,6 +1,6 @@
 [Desktop Entry]
 Version=1.0
-Name=Penrose Session
+Name=Penrose
 Comment=Use this session to run penrose as your desktop environment
 Exec=run-penrose
 Icon=
