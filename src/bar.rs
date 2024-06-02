@@ -2,13 +2,10 @@ use crate::{BAR_HEIGHT_PX, BLACK, BLUE, FONT, GREY, MAX_ACTIVE_WINDOW_CHARS, WHI
 use penrose::{x::XConn, Color};
 use penrose_ui::{
     bar::{
-        widgets::{
-            amixer_volume, battery_summary, current_date_and_time, wifi_network, ActiveWindowName,
-            CurrentLayout, Workspaces,
-        },
+        widgets::{ActiveWindowName, CurrentLayout, RootWindowName, Spacer, Workspaces},
         Position, StatusBar,
     },
-    core::TextStyle,
+    TextStyle,
 };
 
 // Mostly the example dwm bar from the main repo but recreated here so it's easier to tinker
@@ -23,11 +20,6 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
         padding: (2, 2),
     };
 
-    let padded_style = TextStyle {
-        padding: (4, 2),
-        ..style
-    };
-
     StatusBar::try_new(
         Position::Top,
         BAR_HEIGHT_PX,
@@ -37,7 +29,6 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
         vec![
             Box::new(Workspaces::new(style, highlight, empty_ws)),
             Box::new(CurrentLayout::new(style)),
-            // Box::new(penrose_bar::widgets::debug::StateSummary::new(style)),
             Box::new(ActiveWindowName::new(
                 MAX_ACTIVE_WINDOW_CHARS,
                 TextStyle {
@@ -48,10 +39,8 @@ pub fn status_bar<X: XConn>() -> penrose_ui::Result<StatusBar<X>> {
                 true,
                 false,
             )),
-            Box::new(wifi_network(padded_style)),
-            Box::new(battery_summary("BAT1", padded_style)),
-            Box::new(amixer_volume("Master", padded_style)),
-            Box::new(current_date_and_time(padded_style)),
+            Box::new(RootWindowName::new(style, false, true)),
+            Box::new(Spacer::new(vec![0], 0.07)), // reserve space for trayer
         ],
     )
 }

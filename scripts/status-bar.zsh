@@ -2,8 +2,8 @@
 # A super simple status bar for penrose
 
 AUDIO_CHANNEL="Master"
-BATTERIES=("BAT1" "BAT0")
-INTERFACE="$(iwgetid | cut -d' ' -f1)"
+BATTERIES=("BAT1")
+# INTERFACE="$(iwgetid | cut -d' ' -f1)"
 POLL=2
 
 function get_wifi {
@@ -48,7 +48,7 @@ function get_battery {
 
 function get_volume {
   local vol="$(amixer get $AUDIO_CHANNEL | tail -n1 | sed -r 's/.*\[(.*)%\].*/\1/')"
-  (( vol > 0 )) && echo -n " $vol%" || echo -n " ❌"
+  (( vol > 0 )) && echo -n " $vol%" || echo -n " mute"
 }
 
 function get_status {
@@ -60,6 +60,7 @@ current_status=""
 
 while true; do
   new_status="$(get_status)"
+  [ "$1" = "echo" ] && echo "$new_status"
   [ "$current_status" = "$new_status" ] || xsetroot -name "$new_status"
   current_status="$new_status"
   sleep $POLL

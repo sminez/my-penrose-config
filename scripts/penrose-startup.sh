@@ -36,6 +36,16 @@ pkill -fi blueman-applet; blueman-applet &
 pkill -fi xfce4-power-man; xfce4-power-manager &  # for some reason, this ends up running as xcfe4-power-man
 pkill -fi gnome-screensaver; gnome-screensaver &
 pkill -fi gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
+pkill -fi 'status-bar.zsh'; "/usr/local/scripts/status-bar.zsh" &
+pkill -fi trayer; trayer \
+  --edge top \
+  --align right \
+  --expand false \
+  --width 7 \
+  --height 24 \
+  --transparent true \
+  --alpha 0 \
+  --tint 0x282828 &
 
 "$HOME/.fehbg"
 

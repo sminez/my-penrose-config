@@ -20,6 +20,30 @@ use std::collections::HashMap;
 use tracing::subscriber::set_global_default;
 use tracing_subscriber::{layer::SubscriberExt, FmtSubscriber};
 
+use penrose::{
+    core::State,
+    x::{Atom, Prop, XConn, XEvent},
+    Result,
+};
+pub fn event_hook<X: XConn>(event: &XEvent, _: &mut State<X>, x: &X) -> Result<bool> {
+    let unmanaged: [&str; 2] = [
+        Atom::NetWindowTypeDock.as_ref(),
+        Atom::NetWindowTypeToolbar.as_ref(),
+    ];
+
+    if let XEvent::MapRequest(id) = event {
+        let p = x.get_prop(*id, Atom::NetWmWindowType.as_ref())?;
+        if let Some(Prop::Atom(atoms)) = p {
+            if atoms.iter().any(|a| unmanaged.contains(&a.as_ref())) {
+                x.map(*id)?;
+                return Ok(false);
+            }
+        };
+    }
+
+    Ok(true)
+}
+
 fn main() -> anyhow::Result<()> {
     let builder = FmtSubscriber::builder()
         .with_env_filter("info")
@@ -46,10 +70,11 @@ fn main() -> anyhow::Result<()> {
 
     let config = add_ewmh_hooks(Config {
         default_layouts: layouts(),
-        floating_classes: vec!["mpv-float".to_owned()],
+        floating_classes: vec!["mpv-float".to_owned(), "stalonetray".to_owned()],
         manage_hook: Some(manage_hook),
         startup_hook: Some(startup_hook),
         layout_hook: Some(Box::new(layout_hook)),
+        event_hook: Some(Box::new(event_hook)),
         ..Config::default()
     });
 
