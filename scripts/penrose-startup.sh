@@ -24,12 +24,12 @@ xsetroot -cursor_name left_ptr
 pkill -fi picom; picom &
 pkill -fi nm-applet; nm-applet &
 pkill -fi udiskie; udiskie -a -n -t &
-# pkill -fi xautolock; xautolock \
-#   -detectsleep \
-#   -time 3 \
-#   -locker "/usr/local/bin/lock-screen" \
-#   -notify 30 \
-#   -notifier "notify-send -u critical -t 120 -- 'LOCKING screen in 30 seconds...'" &
+pkill -fi xautolock; xautolock \
+  -detectsleep \
+  -time 3 \
+  -locker "gnome-screensaver-command --lock" \
+  -notify 30 \
+  -notifier "notify-send -u critical -t 120 -- 'LOCKING screen in 30 seconds...'" &
 pkill -fi volumeicon; volumeicon &
 pkill -fi dunst; dunst &
 pkill -fi blueman-applet; blueman-applet &

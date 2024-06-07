@@ -44,6 +44,8 @@ where
         "M-bracketleft" => modify_with(|cs| cs.previous_screen()),
         "M-S-bracketright" => modify_with(|cs| cs.drag_workspace_forward()),
         "M-S-bracketleft" => modify_with(|cs| cs.drag_workspace_backward()),
+        "M-Left" => modify_with(|cs| cs.focus_previous_workspace()),
+        "M-Right" => modify_with(|cs| cs.focus_next_workspace()),
 
         // Layouts
         "M-grave" => modify_with(|cs| cs.next_layout()),
@@ -54,7 +56,7 @@ where
         "M-S-Left" => send_layout_message(|| ShrinkMain),
 
         // Launchers
-        "M-A-s" => spawn("screenshot"),
+        "M-A-s" => spawn("flameshot gui"),
         "M-semicolon" => spawn("rofi-apps"),
         "M-Return" => spawn("st"),
         "M-slash" => Box::new(toggle_scratch),

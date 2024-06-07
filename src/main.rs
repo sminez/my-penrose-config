@@ -1,7 +1,6 @@
 //! My personal penrose config
 use anyhow::Context;
 use penrose::{
-    builtin::hooks::SpacingHook,
     core::{bindings::parse_keybindings_with_xmodmap, Config, WindowManager},
     extensions::hooks::{
         add_ewmh_hooks, add_named_scratchpads,
@@ -13,8 +12,11 @@ use penrose::{
     x11rb::RustConn,
 };
 use penrose_sminez::{
-    actions::add_sticky_client_state, bar::status_bar, bindings::raw_key_bindings,
-    layouts::layouts, BAR_HEIGHT_PX, INNER_PX, OUTER_PX,
+    actions::add_sticky_client_state,
+    bar::status_bar,
+    bindings::raw_key_bindings,
+    layouts::{layouts, PerScreenSpacingHook},
+    INNER_PX, OUTER_PX,
 };
 use std::collections::HashMap;
 use tracing::subscriber::set_global_default;
@@ -61,11 +63,9 @@ fn main() -> anyhow::Result<()> {
         ClassName("floatTerm") => FloatingCentered::new(0.8, 0.6),
         ClassName("discord")  => SetWorkspace("9"),
     ];
-    let layout_hook = SpacingHook {
+    let layout_hook = PerScreenSpacingHook {
         inner_px: INNER_PX,
         outer_px: OUTER_PX,
-        top_px: BAR_HEIGHT_PX,
-        bottom_px: 0,
     };
 
     let config = add_ewmh_hooks(Config {

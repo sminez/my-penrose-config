@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+dir="$HOME/.config/rofi/launchers/custom"
+theme='style-9'
+uptime="$(uptime -p | sed -e 's/up //g')"
+
+rofi -dmenu \
+    -mesg "Uptime: $uptime" \
+    -theme "${dir}/${theme}.rasi"

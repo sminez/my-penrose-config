@@ -20,8 +20,6 @@ pub const RATIO: f32 = 0.6;
 pub const RATIO_STEP: f32 = 0.1;
 pub const OUTER_PX: u32 = 5;
 pub const INNER_PX: u32 = 5;
-pub const BAR_HEIGHT_PX: u32 = 24;
-pub const MAX_ACTIVE_WINDOW_CHARS: usize = 50;
 
 pub const DEBUG_ENV_VAR: &str = "PENROSE_DEBUG";
 

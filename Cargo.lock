@@ -37,9 +37,9 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "bitflags"
-version = "2.3.3"
+version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
+checksum = "cf4b9d6a944f767f8e5e0db018570623c85f3d925ac718db4e06d0187adb21c1"
 dependencies = [
  "serde",
 ]
@@ -176,10 +176,10 @@ checksum = "b15813163c1d831bf4a13c3610c05c0d03b39feb07f7e09fa234dac9b15aaf39"
 
 [[package]]
 name = "penrose"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "anymap",
- "bitflags 2.3.3",
+ "bitflags 2.5.0",
  "nix",
  "penrose_keysyms",
  "strum",
@@ -203,7 +203,7 @@ dependencies = [
 
 [[package]]
 name = "penrose_keysyms"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "strum",
  "strum_macros",
@@ -211,7 +211,7 @@ dependencies = [
 
 [[package]]
 name = "penrose_ui"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "penrose",
  "thiserror",
@@ -355,9 +355,9 @@ dependencies = [
 
 [[package]]
 name = "strum_macros"
-version = "0.25.1"
+version = "0.25.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6069ca09d878a33f883cc06aaa9718ede171841d3832450354410b718b097232"
+checksum = "23dc1fa9ac9c169a78ba62f0b841814b7abae11bdd047b9c58f893439e309ea0"
 dependencies = [
  "heck",
  "proc-macro2",
