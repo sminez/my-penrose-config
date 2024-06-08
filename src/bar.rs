@@ -1,7 +1,7 @@
 use crate::{schedule::CronRunner, BLACK, BLUE, FONT, GREY, WHITE};
 use penrose::{
     core::State,
-    pure::geometry::Rect,
+    pure::geometry::{Point, Rect},
     util::{spawn_for_output, spawn_for_output_with_args},
     x::XConn,
     Color,
@@ -38,8 +38,10 @@ fn base_widgets<X: XConn>(runner: &mut CronRunner) -> Vec<Box<dyn Widget<X>>> {
     let ms = |n: u64| Duration::from_millis(n);
 
     vec![
+        Box::new(Wedge::start(BLUE, BLACK)),
         Box::new(Workspaces::new(style, highlight, empty_ws)),
         Box::new(CurrentLayout::new(style)),
+        Box::new(Wedge::end(BLUE, BLACK).only_with_focus()),
         Box::new(ActiveWindowName::new(
             MAX_ACTIVE_WINDOW_CHARS,
             TextStyle {
@@ -50,20 +52,22 @@ fn base_widgets<X: XConn>(runner: &mut CronRunner) -> Vec<Box<dyn Widget<X>>> {
             true,
             false,
         )),
-        Box::new(runner.new_cron_text(pstyle, weather_text, ms(300_000))),
+        Box::new(Wedge::start(BLUE, BLACK).only_with_focus()),
+        // The wttr.in API is freaking out a bit recently and hanging / returning errors
+        // so dropping this for now.
+        // Box::new(runner.new_cron_text(pstyle, weather_text, ms(300_000))),
         Box::new(runner.new_cron_text(pstyle, wifi_text, ms(10_000))),
         Box::new(runner.new_cron_text(pstyle, || battery_text("BAT1"), ms(60_000))),
         Box::new(runner.new_cron_text(pstyle, || amixer_text("Master"), ms(1000))),
         Box::new(runner.new_cron_text(pstyle, date_text, ms(10_000))),
-        // Box::new(RootWindowName::new(style, false, true)),
     ]
 }
 
 pub fn status_bar<X: XConn>() -> Result<StatusBar<X>> {
     let mut runner = CronRunner::default();
-
     let mut primary = base_widgets(&mut runner);
     primary.push(Box::new(Spacer::new(0.07))); // reserve space for trayer
+    let external = base_widgets(&mut runner);
 
     let bar = StatusBar::try_new_per_screen(
         Position::Top,
@@ -71,17 +75,73 @@ pub fn status_bar<X: XConn>() -> Result<StatusBar<X>> {
         FONT,
         vec![
             PerScreen::new(BAR_POINT_SIZE_PRIMARY, BAR_HEIGHT_PX_PRIMARY, primary),
-            PerScreen::new(
-                BAR_POINT_SIZE_EXTERNAL,
-                BAR_HEIGHT_PX_EXTERNAL,
-                base_widgets(&mut runner),
-            ),
+            PerScreen::new(BAR_POINT_SIZE_EXTERNAL, BAR_HEIGHT_PX_EXTERNAL, external),
         ],
     )?;
 
     runner.run_threaded();
 
     Ok(bar)
+}
+
+/// A simple 45 degree wedge
+#[derive(Debug, Clone, Copy)]
+pub struct Wedge {
+    only_with_focus: bool,
+    start: bool,
+    fg: Color,
+    bg: Color,
+}
+
+impl Wedge {
+    fn new(fg: impl Into<Color>, bg: impl Into<Color>, start: bool) -> Self {
+        Self {
+            only_with_focus: false,
+            start,
+            fg: fg.into(),
+            bg: bg.into(),
+        }
+    }
+
+    fn start(fg: impl Into<Color>, bg: impl Into<Color>) -> Self {
+        Self::new(fg, bg, true)
+    }
+
+    fn end(fg: impl Into<Color>, bg: impl Into<Color>) -> Self {
+        Self::new(fg, bg, false)
+    }
+
+    fn only_with_focus(mut self) -> Self {
+        self.only_with_focus = true;
+        self
+    }
+}
+
+impl<X: XConn> Widget<X> for Wedge {
+    fn draw(&mut self, ctx: &mut Context<'_>, _: usize, f: bool, w: u32, h: u32) -> Result<()> {
+        ctx.fill_rect(Rect::new(0, 0, w, h), self.bg)?;
+        if self.only_with_focus && !f {
+            return Ok(());
+        }
+
+        let p = if self.start { 0 } else { h };
+        ctx.fill_polygon(
+            &[Point::new(p, p), Point::new(h, 0), Point::new(0, h)],
+            self.fg,
+        )
+    }
+
+    fn current_extent(&mut self, _: &mut Context<'_>, h: u32) -> Result<(u32, u32)> {
+        Ok((h, h))
+    }
+
+    fn is_greedy(&self) -> bool {
+        false
+    }
+
+    fn require_draw(&self) -> bool {
+        false
+    }
 }
 
 #[derive(Debug)]
@@ -140,10 +200,13 @@ pub fn date_text() -> Option<String> {
 
 pub fn weather_text() -> Option<String> {
     Some(
-        spawn_for_output_with_args("curl", &["-s", "http://wttr.in?format=%c%t"])
-            .unwrap_or_default()
-            .trim()
-            .to_string(),
+        spawn_for_output_with_args(
+            "curl",
+            &["-s", "--max-time", "5", "http://wttr.in?format=%c%t"],
+        )
+        .unwrap_or_default()
+        .trim()
+        .to_string(),
     )
 }
 
