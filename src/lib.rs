@@ -6,14 +6,23 @@ pub mod actions;
 pub mod bar;
 pub mod bindings;
 pub mod layouts;
+pub mod schedule;
 
 pub type KeyHandler = Box<dyn KeyEventHandler<RustConn>>;
 
 pub const FONT: &str = "ProFontIIx Nerd Font";
-pub const BLACK: u32 = 0x282828ff;
-pub const WHITE: u32 = 0xebdbb2ff;
-pub const GREY: u32 = 0x3c3836ff;
-pub const BLUE: u32 = 0x458588ff;
+
+// Gruvbox
+pub const BLACK: u32 = 0x282828ff; // #282828
+pub const WHITE: u32 = 0xebdbb2ff; // #ebdbb2
+pub const GREY: u32 = 0x3c3836ff; //  #3c3836
+pub const BLUE: u32 = 0x458588ff; //  #458588
+
+// Kanagawa
+// pub const BLACK: u32 = 0x252535ff; // #252535
+// pub const WHITE: u32 = 0xdcd7baff; // #dcd7ba
+// pub const GREY: u32 = 0x363646ff; //  #363646
+// pub const BLUE: u32 = 0x658594ff; //  #658594
 
 pub const MAX_MAIN: u32 = 1;
 pub const RATIO: f32 = 0.6;
