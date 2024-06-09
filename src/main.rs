@@ -16,7 +16,7 @@ use penrose_sminez::{
     bar::status_bar,
     bindings::raw_key_bindings,
     layouts::{layouts, PerScreenSpacingHook},
-    INNER_PX, OUTER_PX,
+    GREY, INNER_PX, OUTER_PX, RED,
 };
 use std::collections::HashMap;
 use tracing::subscriber::set_global_default;
@@ -69,6 +69,8 @@ fn main() -> anyhow::Result<()> {
     };
 
     let config = add_ewmh_hooks(Config {
+        focused_border: RED.into(),
+        normal_border: GREY.into(),
         default_layouts: layouts(),
         floating_classes: vec!["mpv-float".to_owned(), "stalonetray".to_owned()],
         manage_hook: Some(manage_hook),
@@ -78,7 +80,6 @@ fn main() -> anyhow::Result<()> {
         ..Config::default()
     });
 
-    // Create a new named scratchpad and toggle handle for use in keybindings.
     let (nsp, toggle_scratch) = NamedScratchPad::new(
         "terminal",
         "st -c StScratchpad",
@@ -90,8 +91,6 @@ fn main() -> anyhow::Result<()> {
     let conn = RustConn::new()?;
     let raw_bindings = raw_key_bindings(toggle_scratch, reload_handle);
     let key_bindings = parse_keybindings_with_xmodmap(raw_bindings)?;
-
-    // Initialise the required state extension and hooks for handling the named scratchpad
     let wm = add_sticky_client_state(add_named_scratchpads(
         WindowManager::new(config, key_bindings, HashMap::new(), conn)?,
         vec![nsp],

@@ -15,6 +15,11 @@ use penrose_ui::{
 };
 use std::{fs, time::Duration};
 
+// TODO: Work out how to change the highlight color to RED when we pass a certain
+//   date '+%H%M' might be a quick and dirty way to get the current hour/minute value for
+//   comparison against a switch time for changing out the color of theactive window widget at
+//   least?
+
 pub const MAX_ACTIVE_WINDOW_CHARS: usize = 50;
 pub const BAR_HEIGHT_PX_PRIMARY: u32 = 24;
 pub const BAR_HEIGHT_PX_EXTERNAL: u32 = 18;
