@@ -14,11 +14,10 @@ use penrose::{
 use penrose_sminez::{
     actions::add_sticky_client_state,
     bar::status_bar,
-    bindings::raw_key_bindings,
+    bindings::{mouse_bindings, raw_key_bindings},
     layouts::{layouts, PerScreenSpacingHook},
     GREY, INNER_PX, OUTER_PX, RED,
 };
-use std::collections::HashMap;
 use tracing::subscriber::set_global_default;
 use tracing_subscriber::{layer::SubscriberExt, FmtSubscriber};
 
@@ -82,8 +81,10 @@ fn main() -> anyhow::Result<()> {
 
     let (nsp, toggle_scratch) = NamedScratchPad::new(
         "terminal",
-        "st -c StScratchpad",
-        ClassName("StScratchpad"),
+        "alacritty --class ScratchpadTerm",
+        ClassName("ScratchpadTerm"),
+        // "st -c ScratchpadTerm",
+        // ClassName("ScratchpadTerm"),
         FloatingCentered::new(0.8, 0.8),
         true,
     );
@@ -92,7 +93,7 @@ fn main() -> anyhow::Result<()> {
     let raw_bindings = raw_key_bindings(toggle_scratch, reload_handle);
     let key_bindings = parse_keybindings_with_xmodmap(raw_bindings)?;
     let wm = add_sticky_client_state(add_named_scratchpads(
-        WindowManager::new(config, key_bindings, HashMap::new(), conn)?,
+        WindowManager::new(config, key_bindings, mouse_bindings(), conn)?,
         vec![nsp],
     ));
 

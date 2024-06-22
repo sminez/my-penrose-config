@@ -30,3 +30,15 @@ uninstall:
 	@echo ":: Removing scripts..."
 	@ls scripts | xargs -I {} rm -f /usr/local/scripts/{}
 	@echo ":: Done"
+
+.PHONY: build-debug
+build-debug:
+	$(shell [ "$EUID" = "0" ] && echo "build can not be run as root" && exit 1)
+	@echo ":: Rebuilding in debug mode..."
+	@cargo build
+
+.PHONY: install-debug
+install-debug:
+	@echo ":: Installing binary..."
+	@cp -f target/debug/penrose /usr/local/bin
+	@chmod 755 /usr/local/bin/penrose

@@ -1,13 +1,17 @@
 use crate::actions::{power_menu, set_tracing_filter, toggle_sticky_client};
-use crate::KeyHandler;
+use crate::{KeyHandler, MouseHandler};
 use penrose::{
     builtin::{
         actions::{
-            floating::{float_focused, reposition, resize, sink_all, sink_focused},
+            floating::{
+                float_focused, reposition, resize, sink_all, sink_clicked, sink_focused,
+                MouseDragHandler, MouseResizeHandler,
+            },
             log_current_state, modify_with, send_layout_message, spawn,
         },
         layout::messages::{ExpandMain, IncMain, ShrinkMain},
     },
+    core::bindings::MouseState,
     extensions::hooks::ToggleNamedScratchPad,
     map,
 };
@@ -58,7 +62,7 @@ where
         // Launchers
         "M-A-s" => spawn("flameshot gui"),
         "M-semicolon" => spawn("rofi-apps"),
-        "M-Return" => spawn("st"),
+        "M-Return" => spawn("alacritty"),
         "M-slash" => Box::new(toggle_scratch),
 
         // Session management
@@ -101,4 +105,19 @@ where
     }
 
     raw_bindings
+}
+
+pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
+    use penrose::core::bindings::{
+        ModifierKey::Meta,
+        MouseButton::{Left, Middle, Right},
+    };
+
+    map! {
+        map_keys: |(button, modifiers)| MouseState { button, modifiers };
+
+        (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
+        (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
+        (Middle, vec![Meta]) => sink_clicked(),
+    }
 }

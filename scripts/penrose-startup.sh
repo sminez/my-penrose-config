@@ -14,8 +14,10 @@ xrandr --output DisplayPort-1 --auto --right-of eDP &
 
 # fix a couple of quirks with my thinkpad: enable tap-click for the touchpad
 # and slow down the track point accelleration
-xinput --set-prop "11" "libinput Tapping Enabled" 1
-xinput --set-prop "12" "libinput Accel Speed" 0.0
+# xinput --set-prop "11" "libinput Tapping Enabled" 1
+# xinput --set-prop "12" "libinput Accel Speed" 0.0
+
+xinput --set-prop "15" "libinput Tapping Enabled" 1
 
 # Keyboard overrides
 setxkbmap -option caps:ctrl_modifier

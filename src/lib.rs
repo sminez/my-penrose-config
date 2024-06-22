@@ -1,6 +1,9 @@
 #![warn(clippy::all)]
 #![warn(future_incompatible, rust_2024_compatibility)]
-use penrose::{core::bindings::KeyEventHandler, x11rb::RustConn};
+use penrose::{
+    core::bindings::{KeyEventHandler, MouseEventHandler},
+    x11rb::RustConn,
+};
 
 pub mod actions;
 pub mod bar;
@@ -8,6 +11,7 @@ pub mod bindings;
 pub mod layouts;
 
 pub type KeyHandler = Box<dyn KeyEventHandler<RustConn>>;
+pub type MouseHandler = Box<dyn MouseEventHandler<RustConn>>;
 
 pub const FONT: &str = "ProFontIIx Nerd Font";
 
