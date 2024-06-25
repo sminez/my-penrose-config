@@ -4,8 +4,8 @@ use penrose::{
     builtin::{
         actions::{
             floating::{
-                float_focused, reposition, resize, sink_all, sink_clicked, sink_focused,
-                MouseDragHandler, MouseResizeHandler,
+                float_all, float_focused, sink_all, sink_focused, MouseDragHandler,
+                MouseResizeHandler,
             },
             log_current_state, modify_with, send_layout_message, spawn,
         },
@@ -62,7 +62,7 @@ where
         // Launchers
         "M-A-s" => spawn("flameshot gui"),
         "M-semicolon" => spawn("rofi-apps"),
-        "M-Return" => spawn("alacritty"),
+        "M-Return" => spawn("st"),
         "M-slash" => Box::new(toggle_scratch),
 
         // Session management
@@ -73,18 +73,9 @@ where
 
         // Floating management
         "M-C-f" => float_focused(),
+        "M-C-S-f" => float_all(),
         "M-C-s" => sink_focused(),
         "M-C-S-s" => sink_all(),
-        // Floating resize
-        "M-C-Right" => resize(DELTA, 0),
-        "M-C-Left" => resize(-DELTA, 0),
-        "M-C-Up" => resize(0, -DELTA),
-        "M-C-Down" => resize(0, DELTA),
-        // Floating position
-        "M-C-l" => reposition(DELTA, 0),
-        "M-C-h" => reposition(-DELTA, 0),
-        "M-C-k" => reposition(0, -DELTA),
-        "M-C-j" => reposition(0, DELTA),
 
         // Debugging
         "M-A-t" => set_tracing_filter(handle),
@@ -109,6 +100,7 @@ where
 
 pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
     use penrose::core::bindings::{
+        click_handler,
         ModifierKey::Meta,
         MouseButton::{Left, Middle, Right},
     };
@@ -118,6 +110,6 @@ pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
 
         (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
         (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
-        (Middle, vec![Meta]) => sink_clicked(),
+        (Middle, vec![Meta]) => click_handler(sink_focused()),
     }
 }

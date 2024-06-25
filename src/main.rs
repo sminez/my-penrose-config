@@ -81,10 +81,8 @@ fn main() -> anyhow::Result<()> {
 
     let (nsp, toggle_scratch) = NamedScratchPad::new(
         "terminal",
-        "alacritty --class ScratchpadTerm",
+        "st -c ScratchpadTerm",
         ClassName("ScratchpadTerm"),
-        // "st -c ScratchpadTerm",
-        // ClassName("ScratchpadTerm"),
         FloatingCentered::new(0.8, 0.8),
         true,
     );
