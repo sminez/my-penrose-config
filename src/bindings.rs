@@ -1,5 +1,7 @@
-use crate::actions::{power_menu, set_tracing_filter, toggle_sticky_client};
-use crate::{KeyHandler, MouseHandler};
+use crate::{
+    actions::{power_menu, set_tracing_filter, toggle_sticky_client, DragTerm},
+    KeyHandler, MouseHandler,
+};
 use penrose::{
     builtin::{
         actions::{
@@ -17,9 +19,6 @@ use penrose::{
 };
 use std::collections::HashMap;
 use tracing_subscriber::{reload::Handle, EnvFilter};
-
-// Delta for moving / resizing floating windows
-const DELTA: i32 = 10;
 
 // Generate a raw key binding map in terms of parsable string key bindings rather than resolved key codes
 pub fn raw_key_bindings<L, S>(
@@ -101,7 +100,7 @@ where
 pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
     use penrose::core::bindings::{
         click_handler,
-        ModifierKey::Meta,
+        ModifierKey::{Ctrl, Meta},
         MouseButton::{Left, Middle, Right},
     };
 
@@ -111,5 +110,6 @@ pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
         (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
         (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
         (Middle, vec![Meta]) => click_handler(sink_focused()),
+        (Left, vec![Ctrl]) => DragTerm::boxed_default(),
     }
 }

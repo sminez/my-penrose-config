@@ -1,9 +1,14 @@
-use crate::KeyHandler;
+use crate::{KeyHandler, MouseHandler};
 use penrose::{
     builtin::actions::key_handler,
-    core::{State, WindowManager},
+    core::{
+        bindings::{MotionNotifyEvent, MouseEvent, MouseEventHandler, MouseEventKind},
+        hooks::ManageHook,
+        State, WindowManager,
+    },
     custom_error,
     extensions::util::dmenu::{DMenu, DMenuConfig, MenuMatch},
+    pure::geometry::{Point, Rect},
     util::spawn,
     x::{XConn, XConnExt},
     x11rb::RustConn,
@@ -130,4 +135,58 @@ pub fn toggle_sticky_client() -> KeyHandler {
 
         Ok(())
     })
+}
+
+#[derive(Default, Debug)]
+struct DragTermState {
+    r: Rect,
+}
+
+#[derive(Debug)]
+pub struct DragTermPosition;
+
+impl<X: XConn> ManageHook<X> for DragTermPosition {
+    fn call(&mut self, client: Xid, state: &mut State<X>, _: &X) -> Result<()> {
+        let r = state.extension::<DragTermState>()?.borrow().r;
+        state.client_set.float(client, r)
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy)]
+pub struct DragTerm {
+    start: Option<Point>,
+}
+
+impl DragTerm {
+    pub fn boxed_default() -> MouseHandler {
+        Box::<Self>::default()
+    }
+}
+
+impl<X: XConn> MouseEventHandler<X> for DragTerm {
+    fn on_mouse_event(&mut self, evt: &MouseEvent, state: &mut State<X>, _: &X) -> Result<()> {
+        match evt.kind {
+            MouseEventKind::Press => self.start = Some(evt.data.rpt),
+            MouseEventKind::Release => {
+                let r = match self.start {
+                    Some(p) => Rect::from((p, evt.data.rpt)),
+                    None => return Err(custom_error!("DragTerm release without press")),
+                };
+
+                let s = state.extension_or_default::<DragTermState>();
+                s.borrow_mut().r = r;
+                self.start = None;
+
+                if let Err(e) = spawn("st -c DragTerm") {
+                    warn!(%e, "unable to spawn st");
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    fn on_motion(&mut self, _evt: &MotionNotifyEvent, _state: &mut State<X>, _x: &X) -> Result<()> {
+        Ok(()) // TODO: render an outline
+    }
 }
