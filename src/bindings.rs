@@ -105,18 +105,29 @@ pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
         MouseButton::{Left, Middle, Right},
     };
 
+    let success = DragSpawn::boxed(
+        "feh --class DragSpawn --scale-down /usr/local/scripts/success.png",
+        |Rect { x, y, w, h }: Rect| {
+            let d = max(w, h);
+            Rect::new(x, y, d, d)
+        },
+    );
+
+    let oh_no = DragSpawn::boxed(
+        "feh --class DragSpawn --scale-down /usr/local/scripts/oh-no.jpeg",
+        |Rect { x, y, w, h }: Rect| {
+            let d = max(w, h);
+            Rect::new(x, y, d, d)
+        },
+    );
+
     map! {
         map_keys: |(button, modifiers)| MouseState { button, modifiers };
 
         (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
         (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
         (Middle, vec![Meta]) => click_handler(sink_focused()),
-        (Left, vec![Ctrl]) => DragSpawn::boxed(
-            "feh --class DragSpawn --scale-down /usr/local/scripts/oh-no.jpeg",
-            |Rect { x, y, w, h }: Rect| {
-                let d = max(w, h);
-                Rect::new(x, y, d, d)
-            }
-        ),
+        (Left, vec![Ctrl]) => success,
+        (Right, vec![Ctrl]) => oh_no,
     }
 }
