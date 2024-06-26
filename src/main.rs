@@ -12,7 +12,7 @@ use penrose::{
     x11rb::RustConn,
 };
 use penrose_sminez::{
-    actions::{add_sticky_client_state, DragTermPosition},
+    actions::{add_sticky_client_state, DragSpawnPosition},
     bar::status_bar,
     bindings::{mouse_bindings, raw_key_bindings},
     layouts::{layouts, PerScreenSpacingHook},
@@ -62,7 +62,7 @@ fn main() -> anyhow::Result<()> {
     let manage_hook = manage_hooks![
         ClassName("floatTerm") => FloatingCentered::new(0.8, 0.6),
         ClassName("discord")  => SetWorkspace("9"),
-        ClassName("DragTerm") => DragTermPosition,
+        ClassName("DragSpawn") => DragSpawnPosition,
     ];
     let layout_hook = PerScreenSpacingHook {
         inner_px: INNER_PX,
@@ -73,7 +73,7 @@ fn main() -> anyhow::Result<()> {
         focused_border: RED.into(),
         normal_border: GREY.into(),
         default_layouts: layouts(),
-        floating_classes: vec!["mpv-float".to_owned(), "stalonetray".to_owned()],
+        floating_classes: vec!["stalonetray".to_owned()],
         manage_hook: Some(manage_hook),
         startup_hook: Some(startup_hook),
         layout_hook: Some(Box::new(layout_hook)),

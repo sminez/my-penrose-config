@@ -137,48 +137,57 @@ pub fn toggle_sticky_client() -> KeyHandler {
     })
 }
 
+// TODO: support multiple clients using this
 #[derive(Default, Debug)]
-struct DragTermState {
+struct DragSpawnState {
     r: Rect,
 }
 
 #[derive(Debug)]
-pub struct DragTermPosition;
+pub struct DragSpawnPosition;
 
-impl<X: XConn> ManageHook<X> for DragTermPosition {
+impl<X: XConn> ManageHook<X> for DragSpawnPosition {
     fn call(&mut self, client: Xid, state: &mut State<X>, _: &X) -> Result<()> {
-        let r = state.extension::<DragTermState>()?.borrow().r;
+        let s = state.extension::<DragSpawnState>()?;
+        let r = s.borrow().r;
+
         state.client_set.float(client, r)
     }
 }
 
-#[derive(Debug, Default, Clone, Copy)]
-pub struct DragTerm {
+#[derive(Debug, Clone)]
+pub struct DragSpawn {
+    cmd: String,
+    map_rect: fn(Rect) -> Rect,
     start: Option<Point>,
 }
 
-impl DragTerm {
-    pub fn boxed_default() -> MouseHandler {
-        Box::<Self>::default()
+impl DragSpawn {
+    pub fn boxed(cmd: impl Into<String>, map_rect: fn(Rect) -> Rect) -> MouseHandler {
+        Box::new(Self {
+            cmd: cmd.into(),
+            map_rect,
+            start: None,
+        })
     }
 }
 
-impl<X: XConn> MouseEventHandler<X> for DragTerm {
+impl<X: XConn> MouseEventHandler<X> for DragSpawn {
     fn on_mouse_event(&mut self, evt: &MouseEvent, state: &mut State<X>, _: &X) -> Result<()> {
         match evt.kind {
             MouseEventKind::Press => self.start = Some(evt.data.rpt),
             MouseEventKind::Release => {
                 let r = match self.start {
                     Some(p) => Rect::from((p, evt.data.rpt)),
-                    None => return Err(custom_error!("DragTerm release without press")),
+                    None => return Err(custom_error!("DragSpawn release without press")),
                 };
 
-                let s = state.extension_or_default::<DragTermState>();
-                s.borrow_mut().r = r;
+                let s = state.extension_or_default::<DragSpawnState>();
+                s.borrow_mut().r = (self.map_rect)(r);
                 self.start = None;
 
-                if let Err(e) = spawn("st -c DragTerm") {
-                    warn!(%e, "unable to spawn st");
+                if let Err(e) = spawn(&self.cmd) {
+                    warn!(%e, "unable to spawn '{}'", self.cmd);
                 }
             }
         }

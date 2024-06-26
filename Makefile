@@ -19,7 +19,7 @@ install:
 	@ls bin | xargs -I {} chmod 755 /usr/local/bin/{}
 	@echo ":: Installing utility scripts..."
 	@cp -r scripts /usr/local
-	@ls scripts | grep -v lock.png | xargs -I {} chmod 755 /usr/local/scripts/{}
+	@ls scripts | grep -Ev 'png|jpeg' | xargs -I {} chmod 755 /usr/local/scripts/{}
 	@echo ":: Done"
 
 .PHONY: uninstall

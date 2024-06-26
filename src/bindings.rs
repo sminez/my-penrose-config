@@ -1,5 +1,5 @@
 use crate::{
-    actions::{power_menu, set_tracing_filter, toggle_sticky_client, DragTerm},
+    actions::{power_menu, set_tracing_filter, toggle_sticky_client, DragSpawn},
     KeyHandler, MouseHandler,
 };
 use penrose::{
@@ -16,8 +16,9 @@ use penrose::{
     core::bindings::MouseState,
     extensions::hooks::ToggleNamedScratchPad,
     map,
+    pure::geometry::Rect,
 };
-use std::collections::HashMap;
+use std::{cmp::max, collections::HashMap};
 use tracing_subscriber::{reload::Handle, EnvFilter};
 
 // Generate a raw key binding map in terms of parsable string key bindings rather than resolved key codes
@@ -110,6 +111,12 @@ pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
         (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
         (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
         (Middle, vec![Meta]) => click_handler(sink_focused()),
-        (Left, vec![Ctrl]) => DragTerm::boxed_default(),
+        (Left, vec![Ctrl]) => DragSpawn::boxed(
+            "feh --class DragSpawn --scale-down /usr/local/scripts/oh-no.jpeg",
+            |Rect { x, y, w, h }: Rect| {
+                let d = max(w, h);
+                Rect::new(x, y, d, d)
+            }
+        ),
     }
 }
