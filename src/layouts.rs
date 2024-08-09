@@ -13,7 +13,7 @@ use penrose::{
     pure::geometry::Rect,
     stack,
     x::XConn,
-    Xid,
+    Result, Xid,
 };
 
 pub fn layouts() -> LayoutStack {
@@ -43,6 +43,23 @@ fn flex_wide() -> Box<dyn Layout> {
         CenteredMain::horizontal_unboxed(MAX_MAIN, RATIO, RATIO_STEP),
         |_, r| r.w <= 1400,
     )
+}
+
+/// A manage hook for positioning a client as pseudo-fullscreen while still retaining the status
+/// bar.
+pub fn full_screen_minus_bar<X: XConn>(client: Xid, state: &mut State<X>, _: &X) -> Result<()> {
+    let screen = &state.client_set.current_screen();
+    let mut r = screen.geometry();
+    let dy = if screen.index() == 0 {
+        BAR_HEIGHT_PX_PRIMARY
+    } else {
+        BAR_HEIGHT_PX_EXTERNAL
+    };
+
+    r.y += dy;
+    r.h -= dy;
+
+    state.client_set.float(client, r)
 }
 
 /// Modified version of the main crate ScreenSpacingHook that changes the spacing based on the

@@ -16,8 +16,8 @@ xrandr --output DisplayPort-1 --auto --right-of eDP &
 # and slow down the track point accelleration
 # xinput --set-prop "11" "libinput Tapping Enabled" 1
 # xinput --set-prop "12" "libinput Accel Speed" 0.0
-
-xinput --set-prop "15" "libinput Tapping Enabled" 1
+TOUCHPAD=$(xinput | rg --only-matching --replace '$1' 'Touchpad.*id=([0-9]+)')
+xinput --set-prop "$TOUCHPAD" "libinput Tapping Enabled" 1
 
 # Keyboard overrides
 setxkbmap -option caps:ctrl_modifier
@@ -38,6 +38,7 @@ pkill -fi blueman-applet; blueman-applet &
 pkill -fi xfce4-power-man; xfce4-power-manager &  # for some reason, this ends up running as xcfe4-power-man
 pkill -fi gnome-screensaver; gnome-screensaver &
 pkill -fi gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
+pkill -fi polkit-gnome-authentication-agent-1; /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
 pkill -fi trayer; trayer \
   --edge top \
   --align right \

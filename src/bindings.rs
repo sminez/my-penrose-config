@@ -24,6 +24,7 @@ use tracing_subscriber::{reload::Handle, EnvFilter};
 // Generate a raw key binding map in terms of parsable string key bindings rather than resolved key codes
 pub fn raw_key_bindings<L, S>(
     toggle_scratch: ToggleNamedScratchPad,
+    toggle_obsidian: ToggleNamedScratchPad,
     handle: Handle<L, S>,
 ) -> HashMap<String, KeyHandler>
 where
@@ -64,6 +65,7 @@ where
         "M-semicolon" => spawn("rofi-apps"),
         "M-Return" => spawn("st"),
         "M-slash" => Box::new(toggle_scratch),
+        "M-0" => Box::new(toggle_obsidian), // treating this like a virtual workspace
 
         // Session management
         "M-A-l" => spawn("gnome-screensaver-command --lock"),
@@ -101,7 +103,7 @@ where
 pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
     use penrose::core::bindings::{
         click_handler,
-        ModifierKey::{Ctrl, Meta},
+        ModifierKey::{Alt, Meta},
         MouseButton::{Left, Middle, Right},
     };
 
@@ -127,7 +129,7 @@ pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
         (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
         (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
         (Middle, vec![Meta]) => click_handler(sink_focused()),
-        (Left, vec![Ctrl]) => success,
-        (Right, vec![Ctrl]) => oh_no,
+        (Left, vec![Alt]) => success,
+        (Right, vec![Alt]) => oh_no,
     }
 }

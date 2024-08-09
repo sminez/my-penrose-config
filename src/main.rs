@@ -15,7 +15,7 @@ use penrose_sminez::{
     actions::{add_sticky_client_state, DragSpawnPosition},
     bar::status_bar,
     bindings::{mouse_bindings, raw_key_bindings},
-    layouts::{layouts, PerScreenSpacingHook},
+    layouts::{full_screen_minus_bar, layouts, PerScreenSpacingHook},
     GREY, INNER_PX, OUTER_PX, RED,
 };
 use tracing::subscriber::set_global_default;
@@ -81,7 +81,7 @@ fn main() -> anyhow::Result<()> {
         ..Config::default()
     });
 
-    let (nsp, toggle_scratch) = NamedScratchPad::new(
+    let (nsp_term, toggle_scratch) = NamedScratchPad::new(
         "terminal",
         "st -c ScratchpadTerm",
         ClassName("ScratchpadTerm"),
@@ -89,12 +89,20 @@ fn main() -> anyhow::Result<()> {
         true,
     );
 
+    let (nsp_obs, toggle_obsidian) = NamedScratchPad::new(
+        "obsidian",
+        "obsidian",
+        ClassName("obsidian"),
+        full_screen_minus_bar,
+        true,
+    );
+
     let conn = RustConn::new()?;
-    let raw_bindings = raw_key_bindings(toggle_scratch, reload_handle);
+    let raw_bindings = raw_key_bindings(toggle_scratch, toggle_obsidian, reload_handle);
     let key_bindings = parse_keybindings_with_xmodmap(raw_bindings)?;
     let wm = add_sticky_client_state(add_named_scratchpads(
         WindowManager::new(config, key_bindings, mouse_bindings(), conn)?,
-        vec![nsp],
+        vec![nsp_term, nsp_obs],
     ));
 
     let bar = status_bar()?;

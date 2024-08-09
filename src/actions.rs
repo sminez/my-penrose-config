@@ -137,7 +137,6 @@ pub fn toggle_sticky_client() -> KeyHandler {
     })
 }
 
-// TODO: support multiple clients using this
 #[derive(Default, Debug)]
 struct DragSpawnState {
     r: Rect,
@@ -196,6 +195,6 @@ impl<X: XConn> MouseEventHandler<X> for DragSpawn {
     }
 
     fn on_motion(&mut self, _evt: &MotionNotifyEvent, _state: &mut State<X>, _x: &X) -> Result<()> {
-        Ok(()) // TODO: render an outline
+        Ok(())
     }
 }
