@@ -73,7 +73,7 @@ fn main() -> anyhow::Result<()> {
         focused_border: RED.into(),
         normal_border: GREY.into(),
         default_layouts: layouts(),
-        floating_classes: vec!["stalonetray".to_owned()],
+        floating_classes: vec!["stalonetray".to_owned(), "floatingWindow".to_owned()],
         manage_hook: Some(manage_hook),
         startup_hook: Some(startup_hook),
         layout_hook: Some(Box::new(layout_hook)),

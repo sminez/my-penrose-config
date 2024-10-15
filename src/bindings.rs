@@ -1,5 +1,5 @@
 use crate::{
-    actions::{power_menu, set_tracing_filter, toggle_sticky_client, DragSpawn},
+    actions::{power_menu, set_tracing_filter, toggle_sticky_client},
     KeyHandler, MouseHandler,
 };
 use penrose::{
@@ -14,11 +14,10 @@ use penrose::{
         layout::messages::{ExpandMain, IncMain, ShrinkMain},
     },
     core::bindings::MouseState,
-    extensions::hooks::ToggleNamedScratchPad,
+    extensions::{actions::toggle_fullscreen, hooks::ToggleNamedScratchPad},
     map,
-    pure::geometry::Rect,
 };
-use std::{cmp::max, collections::HashMap};
+use std::collections::HashMap;
 use tracing_subscriber::{reload::Handle, EnvFilter};
 
 // Generate a raw key binding map in terms of parsable string key bindings rather than resolved key codes
@@ -72,6 +71,7 @@ where
         "M-A-Escape" => power_menu(),
 
         "M-C-t" => toggle_sticky_client(),
+        "M-S-f" => toggle_fullscreen(),
 
         // Floating management
         "M-C-f" => float_focused(),
@@ -103,25 +103,25 @@ where
 pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
     use penrose::core::bindings::{
         click_handler,
-        ModifierKey::{Alt, Meta},
+        ModifierKey::Meta,
         MouseButton::{Left, Middle, Right},
     };
 
-    let success = DragSpawn::boxed(
-        "feh --class DragSpawn --scale-down /usr/local/scripts/success.png",
-        |Rect { x, y, w, h }: Rect| {
-            let d = max(w, h);
-            Rect::new(x, y, d, d)
-        },
-    );
+    // let success = DragSpawn::boxed(
+    //     "feh --class DragSpawn --scale-down /usr/local/scripts/success.png",
+    //     |Rect { x, y, w, h }: Rect| {
+    //         let d = max(w, h);
+    //         Rect::new(x, y, d, d)
+    //     },
+    // );
 
-    let oh_no = DragSpawn::boxed(
-        "feh --class DragSpawn --scale-down /usr/local/scripts/oh-no.jpeg",
-        |Rect { x, y, w, h }: Rect| {
-            let d = max(w, h);
-            Rect::new(x, y, d, d)
-        },
-    );
+    // let oh_no = DragSpawn::boxed(
+    //     "feh --class DragSpawn --scale-down /usr/local/scripts/oh-no.jpeg",
+    //     |Rect { x, y, w, h }: Rect| {
+    //         let d = max(w, h);
+    //         Rect::new(x, y, d, d)
+    //     },
+    // );
 
     map! {
         map_keys: |(button, modifiers)| MouseState { button, modifiers };
@@ -129,7 +129,7 @@ pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
         (Left, vec![Meta]) => MouseDragHandler::boxed_default(),
         (Right, vec![Meta]) => MouseResizeHandler::boxed_default(),
         (Middle, vec![Meta]) => click_handler(sink_focused()),
-        (Left, vec![Alt]) => success,
-        (Right, vec![Alt]) => oh_no,
+        // (Left, vec![Alt]) => success,
+        // (Right, vec![Alt]) => oh_no,
     }
 }
