@@ -40,6 +40,7 @@ pkill -fi gnome-screensaver; gnome-screensaver &
 pkill -fi gnome-keyring-daemon; gnome-keyring-daemon --start --components=pkcs11,secrets,ssh &
 pkill -fi polkit-gnome-authentication-agent-1; /usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1 &
 pkill -fi trayer; trayer \
+  --monitor primary \
   --edge top \
   --align right \
   --expand false \
