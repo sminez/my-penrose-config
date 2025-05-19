@@ -1,19 +1,19 @@
 use crate::{
-    bar::{BAR_HEIGHT_PX_EXTERNAL, BAR_HEIGHT_PX_PRIMARY},
     MAX_MAIN, RATIO, RATIO_STEP,
+    bar::{BAR_HEIGHT_PX_EXTERNAL, BAR_HEIGHT_PX_PRIMARY},
 };
 use penrose::{
+    Xid,
     builtin::layout::{CenteredMain, Grid, MainAndStack, Monocle},
     core::{
+        State,
         hooks::LayoutHook,
         layout::{Layout, LayoutStack},
-        State,
     },
     extensions::layout::{Conditional, Tatami},
     pure::geometry::Rect,
     stack,
     x::XConn,
-    Result, Xid,
 };
 
 pub fn layouts() -> LayoutStack {
@@ -45,23 +45,6 @@ fn flex_wide() -> Box<dyn Layout> {
     )
 }
 
-/// A manage hook for positioning a client as pseudo-fullscreen while still retaining the status
-/// bar.
-pub fn full_screen_minus_bar<X: XConn>(client: Xid, state: &mut State<X>, _: &X) -> Result<()> {
-    let screen = &state.client_set.current_screen();
-    let mut r = screen.geometry();
-    let dy = if screen.index() == 0 {
-        BAR_HEIGHT_PX_PRIMARY
-    } else {
-        BAR_HEIGHT_PX_EXTERNAL
-    };
-
-    r.y += dy;
-    r.h -= dy;
-
-    state.client_set.float(client, r)
-}
-
 /// Modified version of the main crate ScreenSpacingHook that changes the spacing based on the
 /// screen index so that I can give more space on my internal screen which has a higher resolution.
 #[derive(Debug, Clone, Default)]
@@ -88,7 +71,7 @@ impl<X: XConn> LayoutHook<X> for PerScreenSpacingHook {
             BAR_HEIGHT_PX_EXTERNAL
         };
 
-        r.y += top_px;
+        r.y += top_px as i32;
         r.h -= top_px;
 
         shrink(r, self.outer_px)
@@ -114,8 +97,8 @@ fn shrink(r: Rect, px: u32) -> Rect {
     }
 
     Rect {
-        x: r.x + px,
-        y: r.y + px,
+        x: r.x + px as i32,
+        y: r.y + px as i32,
         w: r.w - 2 * px,
         h: r.h - 2 * px,
     }

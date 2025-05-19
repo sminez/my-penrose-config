@@ -1,19 +1,19 @@
 use crate::{BLACK, BLUE, FONT, GREY, WHITE};
 use penrose::{
+    Color,
     core::State,
     pure::geometry::{Point, Rect},
     x::XConn,
-    Color,
 };
 use penrose_ui::{
-    bar::{
-        widgets::{
-            sys::interval::{amixer_volume, battery_summary, current_date_and_time, wifi_network},
-            ActiveWindowName, CurrentLayout, Widget, Workspaces,
-        },
-        PerScreen, Position, StatusBar,
-    },
     Context, Result, TextStyle,
+    bar::{
+        PerScreen, Position, StatusBar,
+        widgets::{
+            ActiveWindowName, CurrentLayout, Widget, Workspaces,
+            sys::interval::{amixer_volume, battery_summary, current_date_and_time, wifi_network},
+        },
+    },
 };
 use std::time::Duration;
 
@@ -140,9 +140,13 @@ impl<X: XConn> Widget<X> for Wedge {
             return Ok(());
         }
 
-        let p = if self.start { 0 } else { h };
+        let p = if self.start { 0 } else { h as i32 };
         ctx.fill_polygon(
-            &[Point::new(p, p), Point::new(h, 0), Point::new(0, h)],
+            &[
+                Point::new(p, p),
+                Point::new(h as i32, 0),
+                Point::new(0, h as i32),
+            ],
             self.fg,
         )
     }

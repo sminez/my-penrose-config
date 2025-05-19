@@ -1,30 +1,29 @@
 //! My personal penrose config
 use anyhow::Context;
 use penrose::{
-    core::{bindings::parse_keybindings_with_xmodmap, Config, WindowManager},
+    core::{Config, WindowManager, bindings::parse_keybindings_with_xmodmap},
     extensions::hooks::{
-        add_ewmh_hooks, add_named_scratchpads,
+        NamedScratchPad, SpawnOnStartup, add_ewmh_hooks, add_named_scratchpads,
         manage::{FloatingCentered, SetWorkspace},
-        NamedScratchPad, SpawnOnStartup,
     },
     manage_hooks,
     x::query::ClassName,
     x11rb::RustConn,
 };
 use penrose_sminez::{
-    actions::{add_sticky_client_state, DragSpawnPosition},
+    GREY, INNER_PX, OUTER_PX, RED,
+    actions::{DragSpawnPosition, add_sticky_client_state},
     bar::status_bar,
     bindings::{mouse_bindings, raw_key_bindings},
-    layouts::{full_screen_minus_bar, layouts, PerScreenSpacingHook},
-    GREY, INNER_PX, OUTER_PX, RED,
+    layouts::{PerScreenSpacingHook, layouts},
 };
 use tracing::subscriber::set_global_default;
-use tracing_subscriber::{layer::SubscriberExt, FmtSubscriber};
+use tracing_subscriber::{FmtSubscriber, layer::SubscriberExt};
 
 use penrose::{
+    Result,
     core::State,
     x::{Atom, Prop, XConn, XEvent},
-    Result,
 };
 
 pub fn event_hook<X: XConn>(event: &XEvent, _: &mut State<X>, x: &X) -> Result<bool> {
@@ -89,20 +88,12 @@ fn main() -> anyhow::Result<()> {
         true,
     );
 
-    let (nsp_obs, toggle_obsidian) = NamedScratchPad::new(
-        "obsidian",
-        "obsidian",
-        ClassName("obsidian"),
-        full_screen_minus_bar,
-        true,
-    );
-
     let conn = RustConn::new()?;
-    let raw_bindings = raw_key_bindings(toggle_scratch, toggle_obsidian, reload_handle);
+    let raw_bindings = raw_key_bindings(toggle_scratch, reload_handle);
     let key_bindings = parse_keybindings_with_xmodmap(raw_bindings)?;
     let wm = add_sticky_client_state(add_named_scratchpads(
         WindowManager::new(config, key_bindings, mouse_bindings(), conn)?,
-        vec![nsp_term, nsp_obs],
+        vec![nsp_term],
     ));
 
     let bar = status_bar()?;

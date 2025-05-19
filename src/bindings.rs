@@ -1,13 +1,13 @@
 use crate::{
-    actions::{power_menu, set_tracing_filter, toggle_sticky_client},
     KeyHandler, MouseHandler,
+    actions::{power_menu, set_tracing_filter, toggle_sticky_client},
 };
 use penrose::{
     builtin::{
         actions::{
             floating::{
-                float_all, float_focused, sink_all, sink_focused, MouseDragHandler,
-                MouseResizeHandler,
+                MouseDragHandler, MouseResizeHandler, float_all, float_focused, sink_all,
+                sink_focused,
             },
             log_current_state, modify_with, send_layout_message, spawn,
         },
@@ -18,12 +18,11 @@ use penrose::{
     map,
 };
 use std::collections::HashMap;
-use tracing_subscriber::{reload::Handle, EnvFilter};
+use tracing_subscriber::{EnvFilter, reload::Handle};
 
 // Generate a raw key binding map in terms of parsable string key bindings rather than resolved key codes
 pub fn raw_key_bindings<L, S>(
     toggle_scratch: ToggleNamedScratchPad,
-    toggle_obsidian: ToggleNamedScratchPad,
     handle: Handle<L, S>,
 ) -> HashMap<String, KeyHandler>
 where
@@ -64,7 +63,6 @@ where
         "M-semicolon" => spawn("rofi-apps"),
         "M-Return" => spawn("st"),
         "M-slash" => Box::new(toggle_scratch),
-        "M-0" => Box::new(toggle_obsidian), // treating this like a virtual workspace
 
         // Session management
         "M-A-l" => spawn("gnome-screensaver-command --lock"),
@@ -102,9 +100,9 @@ where
 
 pub fn mouse_bindings() -> HashMap<MouseState, MouseHandler> {
     use penrose::core::bindings::{
-        click_handler,
         ModifierKey::Meta,
         MouseButton::{Left, Middle, Right},
+        click_handler,
     };
 
     // let success = DragSpawn::boxed(
