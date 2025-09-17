@@ -26,7 +26,7 @@ pub fn raw_key_bindings<L, S>(
     handle: Handle<L, S>,
 ) -> HashMap<String, KeyHandler>
 where
-    L: From<EnvFilter> + 'static,
+    L: From<EnvFilter> + Send + Sync + 'static,
     S: 'static,
 {
     let mut raw_bindings = map! {

@@ -26,7 +26,7 @@ use penrose::{
     x::{Atom, Prop, XConn, XEvent},
 };
 
-pub fn event_hook<X: XConn>(event: &XEvent, _: &mut State<X>, x: &X) -> Result<bool> {
+pub fn event_hook<X: XConn>(event: &XEvent, _: &mut State<X>, x: &mut X) -> Result<bool> {
     let unmanaged: [&str; 2] = [
         Atom::NetWindowTypeDock.as_ref(),
         Atom::NetWindowTypeToolbar.as_ref(),
@@ -34,11 +34,11 @@ pub fn event_hook<X: XConn>(event: &XEvent, _: &mut State<X>, x: &X) -> Result<b
 
     if let XEvent::MapRequest(id) = event {
         let p = x.get_prop(*id, Atom::NetWmWindowType.as_ref())?;
-        if let Some(Prop::Atom(atoms)) = p {
-            if atoms.iter().any(|a| unmanaged.contains(&a.as_ref())) {
-                x.map(*id)?;
-                return Ok(false);
-            }
+        if let Some(Prop::Atom(atoms)) = p
+            && atoms.iter().any(|a| unmanaged.contains(&a.as_ref()))
+        {
+            x.map(*id)?;
+            return Ok(false);
         };
     }
 

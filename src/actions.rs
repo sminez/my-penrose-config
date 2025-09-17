@@ -1,22 +1,22 @@
 use crate::{KeyHandler, MouseHandler};
 use penrose::{
+    Result, WinId,
     builtin::actions::key_handler,
     core::{
-        bindings::{MotionNotifyEvent, MouseEvent, MouseEventHandler, MouseEventKind},
-        hooks::ManageHook,
         State, WindowManager,
+        bindings::{MotionNotifyEvent, MouseEvent, MouseEventHandler, MouseEventKind},
+        conn::{Conn, ConnExt},
+        hooks::ManageHook,
     },
     custom_error,
     extensions::util::dmenu::{DMenu, DMenuConfig, MenuMatch},
     pure::geometry::{Point, Rect},
     util::spawn,
-    x::{XConn, XConnExt},
     x11rb::RustConn,
-    Result, Xid,
 };
 use std::process::exit;
 use tracing::warn;
-use tracing_subscriber::{reload::Handle, EnvFilter};
+use tracing_subscriber::{EnvFilter, reload::Handle};
 
 // A dmenu based power menu for common actions
 pub fn power_menu() -> KeyHandler {
@@ -47,7 +47,7 @@ const TRACING_DOC_URL: &str =
 // Syntax for the filters themselves can be found at `doc_url`
 pub fn set_tracing_filter<L, S>(handle: Handle<L, S>) -> KeyHandler
 where
-    L: From<EnvFilter> + 'static,
+    L: From<EnvFilter> + Send + Sync + 'static,
     S: 'static,
 {
     key_handler(move |state, _| {
@@ -80,11 +80,11 @@ pub fn k_open(float_class: &'static str) -> KeyHandler {
     key_handler(move |_, _| spawn(format!("/usr/local/scripts/k-penrose.sh {float_class}")))
 }
 
-struct StickyClientState(Vec<Xid>);
+struct StickyClientState(Vec<WinId>);
 
-pub fn add_sticky_client_state<X>(mut wm: WindowManager<X>) -> WindowManager<X>
+pub fn add_sticky_client_state<C>(mut wm: WindowManager<C>) -> WindowManager<C>
 where
-    X: XConn + 'static,
+    C: Conn + 'static,
 {
     wm.state.add_extension(StickyClientState(Vec::new()));
     wm.state.config.compose_or_set_refresh_hook(refresh_hook);
@@ -92,7 +92,7 @@ where
     wm
 }
 
-fn refresh_hook<X: XConn>(state: &mut State<X>, x: &X) -> Result<()> {
+fn refresh_hook<C: Conn>(state: &mut State<C>, conn: &mut C) -> Result<()> {
     let s = state.extension::<StickyClientState>()?;
     let t = state.client_set.current_tag().to_string();
     let mut need_refresh = false;
@@ -111,14 +111,14 @@ fn refresh_hook<X: XConn>(state: &mut State<X>, x: &X) -> Result<()> {
     // so that we don't get into an infinite loop from calling refresh from
     // inside of a refresh hook
     if need_refresh {
-        x.refresh(state)?;
+        conn.refresh(state)?;
     }
 
     Ok(())
 }
 
 pub fn toggle_sticky_client() -> KeyHandler {
-    key_handler(|state, x: &RustConn| {
+    key_handler(|state: &mut State<RustConn>, conn: &mut RustConn| {
         let _s = state.extension::<StickyClientState>()?;
         let mut s = _s.borrow_mut();
 
@@ -130,7 +130,7 @@ pub fn toggle_sticky_client() -> KeyHandler {
             }
 
             drop(s);
-            x.refresh(state)?;
+            conn.refresh(state)?;
         }
 
         Ok(())
@@ -145,8 +145,8 @@ struct DragSpawnState {
 #[derive(Debug)]
 pub struct DragSpawnPosition;
 
-impl<X: XConn> ManageHook<X> for DragSpawnPosition {
-    fn call(&mut self, client: Xid, state: &mut State<X>, _: &X) -> Result<()> {
+impl<C: Conn> ManageHook<C> for DragSpawnPosition {
+    fn call(&mut self, client: WinId, state: &mut State<C>, _: &mut C) -> Result<()> {
         let s = state.extension::<DragSpawnState>()?;
         let r = s.borrow().r;
 
@@ -171,8 +171,8 @@ impl DragSpawn {
     }
 }
 
-impl<X: XConn> MouseEventHandler<X> for DragSpawn {
-    fn on_mouse_event(&mut self, evt: &MouseEvent, state: &mut State<X>, _: &X) -> Result<()> {
+impl<C: Conn> MouseEventHandler<C> for DragSpawn {
+    fn on_mouse_event(&mut self, evt: &MouseEvent, state: &mut State<C>, _: &mut C) -> Result<()> {
         match evt.kind {
             MouseEventKind::Press => self.start = Some(evt.data.rpt),
             MouseEventKind::Release => {
@@ -194,7 +194,12 @@ impl<X: XConn> MouseEventHandler<X> for DragSpawn {
         Ok(())
     }
 
-    fn on_motion(&mut self, _evt: &MotionNotifyEvent, _state: &mut State<X>, _x: &X) -> Result<()> {
+    fn on_motion(
+        &mut self,
+        _evt: &MotionNotifyEvent,
+        _state: &mut State<C>,
+        _: &mut C,
+    ) -> Result<()> {
         Ok(())
     }
 }

@@ -3,17 +3,17 @@ use crate::{
     bar::{BAR_HEIGHT_PX_EXTERNAL, BAR_HEIGHT_PX_PRIMARY},
 };
 use penrose::{
-    Xid,
+    WinId,
     builtin::layout::{CenteredMain, Grid, MainAndStack, Monocle},
     core::{
         State,
+        conn::Conn,
         hooks::LayoutHook,
         layout::{Layout, LayoutStack},
     },
     extensions::layout::{Conditional, Tatami},
     pure::geometry::Rect,
     stack,
-    x::XConn,
 };
 
 pub fn layouts() -> LayoutStack {
@@ -53,13 +53,13 @@ pub struct PerScreenSpacingHook {
     pub inner_px: u32,
 }
 
-impl<X: XConn> LayoutHook<X> for PerScreenSpacingHook {
+impl<C: Conn> LayoutHook<C> for PerScreenSpacingHook {
     fn transform_initial_for_screen(
         &mut self,
         screen_index: usize,
         mut r: Rect,
-        _: &State<X>,
-        _: &X,
+        _: &State<C>,
+        _: &mut C,
     ) -> Rect {
         if r.w == 0 || r.h == 0 {
             return r;
@@ -80,10 +80,10 @@ impl<X: XConn> LayoutHook<X> for PerScreenSpacingHook {
     fn transform_positions(
         &mut self,
         _: Rect,
-        positions: Vec<(Xid, Rect)>,
-        _: &State<X>,
-        _: &X,
-    ) -> Vec<(Xid, Rect)> {
+        positions: Vec<(WinId, Rect)>,
+        _: &State<C>,
+        _: &mut C,
+    ) -> Vec<(WinId, Rect)> {
         positions
             .into_iter()
             .map(|(id, r)| (id, shrink(r, self.inner_px)))

@@ -197,7 +197,7 @@ impl<X: XConn> Widget<X> for Spacer {
         false
     }
 
-    fn on_startup(&mut self, state: &mut State<X>, _: &X) -> Result<()> {
+    fn on_startup(&mut self, state: &mut State<X>, _: &mut X) -> Result<()> {
         self.w = state
             .client_set
             .screens()
